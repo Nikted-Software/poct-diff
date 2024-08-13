@@ -1,0 +1,9 @@
+a/
+a1/
+a2/
+venv/
+__pycache__/
+*.jpeg
+*.jpg
+*.csv
+*.png
