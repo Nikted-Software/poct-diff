@@ -4,45 +4,55 @@ import matplotlib.pyplot as plt
 from pandas import DataFrame
 import pandas as pd
 
+#params
+n_clusters = 2
 dataset = pd.read_csv("feature.csv")
+
+#preprocessing
 dataset = dataset.drop(dataset.columns[0], axis=1)
-print(dataset)
 data = dataset.iloc[:, :].values
-x = dataset.iloc[:, [ 3]].values
-# print(x.shape)
-plt.figure(figsize=(8, 6))
+x = dataset.iloc[:, [1,2]].values
+x1 = dataset.iloc[:, [1,2]].values
+x1[:,[0,1]] = x1[:,[0,1]]/255
+
+#plot data
+fig1=plt.figure()
 plt.scatter(data[:, [2]], data[:, [1]])
-plt.show()
+plt.savefig("data.png")
+plt.close(fig1)
+
 
 gm = GaussianMixture(
-    n_components=2,
+    n_components=n_clusters,
     covariance_type="full",
     n_init=100,
     init_params="kmeans",
     max_iter=100,
-).fit(x)
+)
 
-clustering = SpectralClustering(n_clusters=2,
-        assign_labels='discretize',
-        random_state=0).fit(x)
-pred =  clustering.labels_
+pred = gm.fit_predict(x)
 df = DataFrame({"x": data[:, 2],  "y": data[:, 1], "label": pred})
 groups = df.groupby("label")
-ig, ax = plt.subplots()
+fig2, ax = plt.subplots()
 for name, group in groups:
     ax.scatter(group.x, group.y, label=name)
-
-
-
-pred = gm.predict(x)
-df = DataFrame({"x": data[:, 2],  "y": data[:, 1], "label": pred})
-groups = df.groupby("label")
-ig, ax = plt.subplots()
-for name, group in groups:
-    ax.scatter(group.x, group.y, label=name)
-
 ax.legend()
-plt.show()
+plt.savefig("gm.png")
+plt.close(fig2)
+
+clustering = SpectralClustering(
+        n_clusters=n_clusters,
+        assign_labels='discretize',
+        random_state=0)
+pred =  clustering.fit_predict(x1)
+df = DataFrame({"x": data[:, 2],  "y": data[:, 1], "label": pred})
+groups = df.groupby("label")
+fig3, ax = plt.subplots()
+for name, group in groups:
+    ax.scatter(group.x, group.y, label=name)
+ax.legend()
+plt.savefig("sp.png")
+plt.close(fig3)
 
 dataset[5] = pred
 
