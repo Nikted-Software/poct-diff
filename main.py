@@ -73,8 +73,9 @@ mypath = "a2/44"
 if not os.path.isdir(mypath):
     os.makedirs(mypath)
 
-
-image_name = "7716.jpeg"
+image_folder = "data"
+image_name = "7781.jpeg"
+image_name = f"{image_folder}/{image_name}"
 window_size = 15
 sau_threshold = -0.05
 
