@@ -242,7 +242,6 @@ def total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_gre
 
     window_size = 15
     sau_threshold = -0.05
-    
     maximum_blue = 100
 
     # last local threshold to find wbc
@@ -306,7 +305,6 @@ def total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_gre
                         final_contours.append(c)
                         countsize2 = countsize2 + 1
 
-
     count = 0
     count1 = 0
     countsize = 0
@@ -322,7 +320,6 @@ def total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_gre
         cr = image1[int(yy - p) : int(yy + hh + p), int(xx - p) : int(xx + ww + p)]
         count += 1
         thf0 = []
-
         if cv2.contourArea(c) > minimum_size :
             perimeter = cv2.arcLength(c, True)
             if cv2.contourArea(c) >= minimum_size  and cv2.contourArea(c) <= 2000 :
@@ -331,7 +328,6 @@ def total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_gre
                 th = otsu(cr)
                 image0 = cr
                 image00 = cv2.cvtColor(image0, cv2.COLOR_BGR2GRAY)
-                
                 ret, thresh0 = cv2.threshold(image00, th, 255, cv2.THRESH_BINARY)
                 cv2.imwrite(f"a1/{count}.jpg", thresh0)
                 are.append(cv2.contourArea(c))
@@ -342,8 +338,6 @@ def total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_gre
                             thf0.append(image0[q, g, :])
                 ee = np.array(thf0)
                 thf.append(np.mean(ee, axis=0))
-                
-
     cv2.imwrite("contt2.jpg", image2)
     df_final = pd.DataFrame(thf)
     df_final[3] = df_final[2] / df_final[1]
@@ -355,7 +349,7 @@ def total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_gre
 def feature_extraction(image_path,calibration_coefficient):
     s_area = 6.38
     thickness = 0.022
-    calibration_coefficient = 0.93
+    calibration_coefficient = calibration_coefficient
     image_name = image_path
     image1 = cv2.imread(image_name)
     #image1 = cv2.resize(image1, (4000, 3000))
