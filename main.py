@@ -42,6 +42,15 @@ paths_to_clear = [
 clear_directory(paths_to_clear)
 create_directories(base_path, n_clusters)
 
+files = glob.glob("a1/*")
+for f in files:
+    os.remove(f)
+
+mypath = "a1"
+if not os.path.isdir(mypath):
+    os.makedirs(mypath)
+
+
 image_folder = "data"
 image_name = "7791_crop.jpeg"
 image_name = f"{image_folder}/{image_name}"
@@ -60,25 +69,6 @@ ax1.set_xlabel("size value")
 ax1.set_ylabel("population")
 plt.savefig("ratio.png")
 plt.close(fig1)
-
-m = 0
-path_i = base_path
-included_extensions = ["jpg", "jpeg", "bmp", "png", "gif", "JPG"]
-file_names = [
-    fn
-    for fn in os.listdir(path_i)
-    if any(fn.endswith(ext) for ext in included_extensions)
-]
-dir_list = file_names
-natsort_file_names = natsorted(file_names)
-
-for i in natsort_file_names:
-    im = cv2.imread(path_i + "/" + f"{i}")
-    if df[2][m] <= 100 :
-       cv2.imwrite(f"a2/0/{m+1}.jpg", im)
-    else:
-       cv2.imwrite(f"a2/1/{m+1}.jpg", im)
-    m += 1
 
 dataset = pd.read_csv("feature.csv")
 
