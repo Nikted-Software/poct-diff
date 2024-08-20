@@ -357,10 +357,3 @@ def feature_extraction(image_name,calibration_coefficient):
     minimum_size,minimum_green,le = green_and_size_threshold_finder(image1,cont,maximum_size)
     df_final = total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_green,cont)
     return df_final
-    
-    
-
-
-
-
-    

@@ -30,7 +30,7 @@ def create_directories(base_path, n_clusters):
             if not os.path.isdir(cluster_folder):
                 os.makedirs(cluster_folder)
 
-base_path = "result"
+base_path = "a"
 n_clusters = 2
 
 paths_to_clear = [
