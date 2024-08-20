@@ -238,7 +238,7 @@ def green_and_size_threshold_finder(image1,cont,maximum_size):
     minimum_green = thresh[0]
 
     return minimum_size,minimum_green ,le
-def total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_green):
+def total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_green,cont):
 
     window_size = 15
     sau_threshold = -0.05
@@ -250,6 +250,7 @@ def total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_gre
     contours, hierarchy = cv2.findContours(
         image11, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE
     )
+    count = 0
     count1 = 0
     countsize2 = 0
     p = 0
@@ -354,7 +355,7 @@ def feature_extraction(image_name,calibration_coefficient):
     maximum_size = estimation(image1,calibration_coefficient,thickness,s_area)
     cont = noise_recognition(image1,maximum_size)
     minimum_size,minimum_green,le = green_and_size_threshold_finder(image1,cont,maximum_size)
-    df_final = total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_green)
+    df_final = total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_green,cont)
     return df_final
     
     
