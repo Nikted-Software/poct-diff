@@ -94,27 +94,20 @@ for i in natsort_file_names:
     m += 1
 
 def kmeans_clustering(df, path_i, n_clusters):
-    # Initialize KMeans with variable number of clusters
+    
     kmeans = KMeans(n_clusters=n_clusters, init="random", max_iter=300, n_init=100)
     y_kmeans = kmeans.fit_predict(df.iloc[:, [1, 2]])
-
-    # Count the number of points in each cluster
     cluster_counts = [0] * n_clusters
     for label in y_kmeans:
         cluster_counts[label] += 1
-    
-    # Filter for relevant file extensions
     included_extensions = ["jpg", "jpeg", "bmp", "png", "gif", "JPG"]
     file_names = [
         fn
         for fn in os.listdir(path_i)
         if any(fn.endswith(ext) for ext in included_extensions)
     ]
-    
-    # Sort file names naturally
+
     natsort_file_names = natsorted(file_names)
-    
-    # Save images to corresponding cluster folders
     for m, file_name in enumerate(natsort_file_names):
         im = cv2.imread(os.path.join(path_i, file_name))
         cluster_label = y_kmeans[m]
@@ -122,16 +115,12 @@ def kmeans_clustering(df, path_i, n_clusters):
         if not os.path.exists(cluster_folder):
             os.makedirs(cluster_folder)
         cv2.imwrite(f"{cluster_folder}/{m+1}_class{cluster_label}.jpg", im)
-    
-    # Plotting the clusters
+
     X = df.iloc[:, [2, 1]].values
     colors = ["blue", "red", "green", "yellow", "purple", "orange", "cyan", "magenta", "brown", "pink"]
-    
     for i in range(n_clusters):
         plt.scatter(X[y_kmeans == i, 0], X[y_kmeans == i, 1], s=10, c=colors[i % len(colors)], label=f"Cluster {i+1}")
-    
     plt.scatter(kmeans.cluster_centers_[:, 1], kmeans.cluster_centers_[:, 0], s=100, c="black", label="Centroids")
-    
     plt.title(f"KMeans Clustering with {n_clusters} Clusters")
     plt.xlabel("r")
     plt.ylabel("g")
