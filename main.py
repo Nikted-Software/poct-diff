@@ -26,7 +26,6 @@ def create_directories(paths):
         if not os.path.isdir(path):
             os.makedirs(path)
 
-# Define paths
 paths_to_clear = [
     "a/*",
     "a1/*",
@@ -53,18 +52,12 @@ paths_to_create = [
     "a2/44"
 ]
 
-# Clear files in directories
 clear_directory(paths_to_clear)
-
-# Create directories
 create_directories(paths_to_create)
-
 
 image_folder = "data"
 image_name = "7751_crop.jpeg"
 image_name = f"{image_folder}/{image_name}"
-window_size = 15
-sau_threshold = -0.05
 
 image1 = cv2.imread(image_name)
 image2 = image1
@@ -73,9 +66,9 @@ image1[:, :, 0] = 0
 df = feature_extraction(image_name,0.93)
 
 x = df[3]
-n, bins, patches = plt.hist(x, density=True, bins=50, range=[0, 2])
+n, bins, patches = plt.hist(x, density=True, bins=50, range=[0, 3])
 fig1, ax1 = plt.subplots()
-ax1.hist(x, density=True, bins=50, range=[0, 2])
+ax1.hist(x, density=True, bins=50, range=[0, 3])
 ax1.set_xlabel("size value")
 ax1.set_ylabel("population")
 plt.savefig("ratio.png")
@@ -100,70 +93,49 @@ for i in natsort_file_names:
        cv2.imwrite(f"a2/1/{m+1}.jpg", im)
     m += 1
 
+def kmeans_clustering(df, path_i, n_clusters):
+    # Initialize KMeans with variable number of clusters
+    kmeans = KMeans(n_clusters=n_clusters, init="random", max_iter=300, n_init=100)
+    y_kmeans = kmeans.fit_predict(df.iloc[:, [1, 2]])
 
+    # Count the number of points in each cluster
+    cluster_counts = [0] * n_clusters
+    for label in y_kmeans:
+        cluster_counts[label] += 1
+    
+    # Filter for relevant file extensions
+    included_extensions = ["jpg", "jpeg", "bmp", "png", "gif", "JPG"]
+    file_names = [
+        fn
+        for fn in os.listdir(path_i)
+        if any(fn.endswith(ext) for ext in included_extensions)
+    ]
+    
+    # Sort file names naturally
+    natsort_file_names = natsorted(file_names)
+    
+    # Save images to corresponding cluster folders
+    for m, file_name in enumerate(natsort_file_names):
+        im = cv2.imread(os.path.join(path_i, file_name))
+        cluster_label = y_kmeans[m]
+        cluster_folder = f"a2/{str(cluster_label+1).zfill(2)}"
+        if not os.path.exists(cluster_folder):
+            os.makedirs(cluster_folder)
+        cv2.imwrite(f"{cluster_folder}/{m+1}_class{cluster_label}.jpg", im)
+    
+    # Plotting the clusters
+    X = df.iloc[:, [2, 1]].values
+    colors = ["blue", "red", "green", "yellow", "purple", "orange", "cyan", "magenta", "brown", "pink"]
+    
+    for i in range(n_clusters):
+        plt.scatter(X[y_kmeans == i, 0], X[y_kmeans == i, 1], s=10, c=colors[i % len(colors)], label=f"Cluster {i+1}")
+    
+    plt.scatter(kmeans.cluster_centers_[:, 1], kmeans.cluster_centers_[:, 0], s=100, c="black", label="Centroids")
+    
+    plt.title(f"KMeans Clustering with {n_clusters} Clusters")
+    plt.xlabel("r")
+    plt.ylabel("g")
+    plt.legend()
+    plt.show()
 
-kmeans = KMeans(n_clusters=4, init="random", max_iter=300, n_init=100)
-y_kmeans = kmeans.fit_predict(df.iloc[:, [1, 2]])
-y1 = 0
-y2 = 0
-y3 = 0
-y4 = 0
-
-for i in range(df.shape[0]):
-    if y_kmeans[i] == 0:
-        y1 += 1
-    if y_kmeans[i] == 1:
-        y2 += 1
-    if y_kmeans[i] == 2:
-        y3 += 1
-    if y_kmeans[i] == 3:
-        y4 += 1
-# print(y1, y2, y3, y4)
-m = 0
-path_i = "a"
-relevant_path = path_i
-included_extensions = ["jpg", "jpeg", "bmp", "png", "gif", "JPG"]
-file_names = [
-    fn
-    for fn in os.listdir(relevant_path)
-    if any(fn.endswith(ext) for ext in included_extensions)
-]
-dir_list = file_names
-natsort_file_names = natsorted(file_names)
-for i in natsort_file_names:
-    im = cv2.imread(path_i + "/" + f"{i}")
-    if y_kmeans[m] == 0:
-        cv2.imwrite(f"a2/11/{m+1}class{y_kmeans[m]}.jpg", im)
-    if y_kmeans[m] == 1:
-        cv2.imwrite(f"a2/22/{m+1}class{y_kmeans[m]}.jpg", im)
-    if y_kmeans[m] == 2:
-        cv2.imwrite(f"a2/33/{m+1}class{y_kmeans[m]}.jpg", im)
-    if y_kmeans[m] == 3:
-        cv2.imwrite(f"a2/44/{m+1}class{y_kmeans[m]}.jpg", im)
-    m += 1
-
-
-X = df.iloc[:, [2, 1]].values
-plt.scatter(X[y_kmeans == 0, 0], X[y_kmeans == 0, 1], s=10, c="blue", label="Cluster 1")
-plt.scatter(X[y_kmeans == 1, 0], X[y_kmeans == 1, 1], s=10, c="red", label="Cluster 2")
-plt.scatter(
-    X[y_kmeans == 2, 0], X[y_kmeans == 2, 1], s=10, c="green", label="Cluster 3"
-)
-plt.scatter(
-    X[y_kmeans == 3, 0], X[y_kmeans == 3, 1], s=10, c="yellow", label="Cluster 4"
-)
-plt.scatter(
-    kmeans.cluster_centers_[:, 1],
-    kmeans.cluster_centers_[:, 0],
-    s=100,
-    c="black",
-    label="Centroids",
-)
-
-plt.title("")
-plt.xlabel("r")
-plt.ylabel("g")
-#plt.xticks(range(0, 255,25))
-#plt.yticks(range(0,255,25))
-plt.legend()
-plt.show()
+kmeans_clustering(df, "a", n_clusters=2)

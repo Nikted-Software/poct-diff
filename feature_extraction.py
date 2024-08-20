@@ -346,11 +346,9 @@ def total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_gre
     return df_final
 
 
-def feature_extraction(image_path,calibration_coefficient):
+def feature_extraction(image_name,calibration_coefficient):
     s_area = 6.38
     thickness = 0.022
-    calibration_coefficient = calibration_coefficient
-    image_name = image_path
     image1 = cv2.imread(image_name)
     #image1 = cv2.resize(image1, (4000, 3000))
     maximum_size = estimation(image1,calibration_coefficient,thickness,s_area)
