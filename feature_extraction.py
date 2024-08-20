@@ -1,25 +1,18 @@
-def feature_extraction(image_path, calibration_coefficient):
-    import cv2
-    from scipy.signal import find_peaks
-    from otsu import otsu
-    import numpy as np
-    import pandas as pd
-    import matplotlib
+import cv2
+from scipy.signal import find_peaks
+from otsu import otsu
+import numpy as np
+import pandas as pd
+import matplotlib
+# matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import warnings
+from threshold_sauvola import sau
+import math
 
-    # matplotlib.use('Agg')
-    import matplotlib.pyplot as plt
-    import warnings
-    from threshold_sauvola import sau
-    import math
+warnings.filterwarnings("ignore", message="invalid value encountered in divide")
 
-    warnings.filterwarnings("ignore", message="invalid value encountered in divide")
-
-    s_area = 6.38
-    thickness = 0.022
-    calibration_coefficient = calibration_coefficient
-    image_name = image_path
-    image1 = cv2.imread(image_name)
-    #image1 = cv2.resize(image1, (4000, 3000))
+def estimation(image1,calibration_coefficient,thickness,s_area):
 
     # local threshold with small window to find order of wbc number
     window_size = 15
@@ -40,6 +33,9 @@ def feature_extraction(image_path, calibration_coefficient):
         maximum_size = 500
     else:
         maximum_size = 300
+    return maximum_size
+
+def noise_recognition(image1,maximum_size):
 
     # local threshold with big window to recognize stains and noises
     image2 = image1
@@ -77,7 +73,8 @@ def feature_extraction(image_path, calibration_coefficient):
         or abs(topmost[1] - bottommost[1]) > 500
     ):
         print("channel")
-
+    return cont
+def green_and_size_threshold_finder(image1,cont,maximum_size):
     # local threshold with small window to find size and green threshold
     window_size = 15
     sau_threshold = -0.05
@@ -237,10 +234,15 @@ def feature_extraction(image_path, calibration_coefficient):
     # parameters for last local threshold
     print("minimum green:", thresh[0])
     print("minimum size: ", bins[i])
-    window_size = 15
-    sau_threshold = -0.05
     minimum_size = bins[i]
     minimum_green = thresh[0]
+
+    return minimum_size,minimum_green ,le
+def total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_green):
+
+    window_size = 15
+    sau_threshold = -0.05
+    
     maximum_blue = 100
 
     # last local threshold to find wbc
@@ -350,3 +352,22 @@ def feature_extraction(image_path, calibration_coefficient):
     return df_final
 
 
+def feature_extraction(image_path,calibration_coefficient):
+    s_area = 6.38
+    thickness = 0.022
+    calibration_coefficient = 0.93
+    image_name = image_path
+    image1 = cv2.imread(image_name)
+    #image1 = cv2.resize(image1, (4000, 3000))
+    maximum_size = estimation(image1,calibration_coefficient,thickness,s_area)
+    cont = noise_recognition(image1,maximum_size)
+    minimum_size,minimum_green,le = green_and_size_threshold_finder(image1,cont,maximum_size)
+    df_final = total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_green)
+    return df_final
+    
+    
+
+
+
+
+    
