@@ -82,9 +82,18 @@ sau_threshold = -0.05
 image1 = cv2.imread(image_name)
 image2 = image1
 image1[:, :, 0] = 0
-cv2.imwrite("wb.jpg", image1[:, :, 0])
 
 df = feature_extraction(image_name,0.93)
+
+x = df[3]
+n, bins, patches = plt.hist(x, density=True, bins=50, range=[0, 2])
+fig1, ax1 = plt.subplots()
+ax1.hist(x, density=True, bins=50, range=[0, 2])
+ax1.set_xlabel("size value")
+ax1.set_ylabel("population")
+plt.savefig("ratio.png")
+plt.close(fig1)
+
 m = 0
 path_i = "a"
 included_extensions = ["jpg", "jpeg", "bmp", "png", "gif", "JPG"]
