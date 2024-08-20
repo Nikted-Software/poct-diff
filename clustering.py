@@ -20,7 +20,7 @@ def kmeans_clustering(df, path_i, n_clusters):
     for m, file_name in enumerate(natsort_file_names):
         im = cv2.imread(os.path.join(path_i, file_name))
         cluster_label = y_kmeans[m]
-        cluster_folder = f"a/kmeans/{str(cluster_label+1).zfill(2)}"
+        cluster_folder = f"{path_i}/kmeans/{str(cluster_label+1).zfill(2)}"
         if not os.path.exists(cluster_folder):
             os.makedirs(cluster_folder)
         cv2.imwrite(f"{cluster_folder}/{m+1}_class{cluster_label}.jpg", im)
@@ -59,7 +59,7 @@ def gaussian_mixture_clustering(data, x, path_i, n_clusters):
     for m, file_name in enumerate(natsort_file_names):
         im = cv2.imread(os.path.join(path_i, file_name))
         cluster_label = pred[m]
-        cluster_folder = f"a/gaussian_mixture/{str(cluster_label+1).zfill(2)}"
+        cluster_folder = f"{path_i}/gaussian_mixture/{str(cluster_label+1).zfill(2)}"
         if not os.path.exists(cluster_folder):
             os.makedirs(cluster_folder)
         cv2.imwrite(f"{cluster_folder}/{m+1}_class{cluster_label}.jpg", im)
@@ -74,7 +74,7 @@ def gaussian_mixture_clustering(data, x, path_i, n_clusters):
     plt.title(f"Gaussian Mixture Clustering with {n_clusters} Clusters")
     plt.xlabel("x")
     plt.ylabel("y")
-    plt.savefig("a/gaussian_mixture/gaussian_mixture_plot.png")
+    plt.savefig(f"{path_i}/gaussian_mixture/gaussian_mixture_plot.png")
     plt.close(fig)
 
 
@@ -97,7 +97,7 @@ def spectral_clustering(data, x1, path_i, n_clusters):
     for m, file_name in enumerate(natsort_file_names):
         im = cv2.imread(os.path.join(path_i, file_name))
         cluster_label = pred[m]
-        cluster_folder = f"a/spectral/{str(cluster_label+1).zfill(2)}"
+        cluster_folder = f"{path_i}/spectral/{str(cluster_label+1).zfill(2)}"
         if not os.path.exists(cluster_folder):
             os.makedirs(cluster_folder)
         cv2.imwrite(f"{cluster_folder}/{m+1}_class{cluster_label}.jpg", im)
@@ -112,5 +112,5 @@ def spectral_clustering(data, x1, path_i, n_clusters):
     plt.title(f"Spectral Clustering with {n_clusters} Clusters")
     plt.xlabel("x")
     plt.ylabel("y")
-    plt.savefig("a/spectral/spectral_clustering_plot.png")
+    plt.savefig(f"{path_i}/spectral/spectral_clustering_plot.png")
     plt.close(fig)

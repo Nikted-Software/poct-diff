@@ -11,48 +11,36 @@ import math
 from feature_extraction import feature_extraction
 from clustering import kmeans_clustering,spectral_clustering,gaussian_mixture_clustering
 
-import os
-import glob
-
 def clear_directory(paths):
     for path in paths:
-        files = glob.glob(path)
-        for f in files:
-            os.remove(f)
+        for file_or_dir in glob.glob(path, recursive=True):
+            if os.path.isdir(file_or_dir):
+                for sub_file in glob.glob(os.path.join(file_or_dir, '*'), recursive=True):
+                    os.remove(sub_file)
+                os.rmdir(file_or_dir)
+            else:
+                os.remove(file_or_dir)
 
-def create_directories(paths):
-    for path in paths:
-        if not os.path.isdir(path):
-            os.makedirs(path)
+def create_directories(base_path, n_clusters):
+
+    algorithms = ["kmeans", "gaussian_mixture", "spectral"]
+    for algorithm in algorithms:
+        for i in range(1, n_clusters + 1):
+            cluster_folder = os.path.join(base_path, algorithm, f"{str(i).zfill(2)}")
+            if not os.path.isdir(cluster_folder):
+                os.makedirs(cluster_folder)
+
+base_path = "result"
+n_clusters = 2
 
 paths_to_clear = [
-    "a/*",
-    "a1/*",
-    "a2/0/*",
-    "a2/1/*",
-    "a2/2/*",
-    "a2/3/*",
-    "a2/11/*",
-    "a2/22/*",
-    "a2/33/*",
-    "a2/44/*"
-]
-
-paths_to_create = [
-    "a",
-    "a1",
-    "a2/0",
-    "a2/1",
-    "a2/2",
-    "a2/3",
-    "a2/11",
-    "a2/22",
-    "a2/33",
-    "a2/44"
+    os.path.join(base_path, "kmeans/*"),
+    os.path.join(base_path, "gaussian_mixture/*"),
+    os.path.join(base_path, "spectral/*")
 ]
 
 clear_directory(paths_to_clear)
-create_directories(paths_to_create)
+create_directories(base_path, n_clusters)
 
 image_folder = "data"
 image_name = "7791_crop.jpeg"
@@ -74,7 +62,7 @@ plt.savefig("ratio.png")
 plt.close(fig1)
 
 m = 0
-path_i = "a"
+path_i = base_path
 included_extensions = ["jpg", "jpeg", "bmp", "png", "gif", "JPG"]
 file_names = [
     fn
@@ -92,8 +80,6 @@ for i in natsort_file_names:
        cv2.imwrite(f"a2/1/{m+1}.jpg", im)
     m += 1
 
-#params
-n_clusters = 2
 dataset = pd.read_csv("feature.csv")
 
 #preprocessing
@@ -109,6 +95,6 @@ plt.scatter(data[:, [2]], data[:, [1]])
 plt.savefig("data.png")
 plt.close(fig1)
 
-kmeans_clustering(df, "a", n_clusters=2)
-gaussian_mixture_clustering(data, n_clusters=n_clusters, output_path="gm.png")
-updated_data = spectral_clustering(data, x1, n_clusters=n_clusters, output_path="sp.png")
+kmeans_clustering(df, base_path, n_clusters=2)
+gaussian_mixture_clustering(data,x, base_path, n_clusters=n_clusters)
+updated_data = spectral_clustering(data, x1, base_path ,n_clusters=n_clusters)
