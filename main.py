@@ -12,69 +12,56 @@ import math
 from feature_extraction import feature_extraction
 
 
-files = glob.glob("a/*")
-for f in files:
-    os.remove(f)
-files = glob.glob("a1/*")
-for f in files:
-    os.remove(f)
-files = glob.glob("a2/0/*")
-for f in files:
-    os.remove(f)
-files = glob.glob("a2/1/*")
-for f in files:
-    os.remove(f)
-files = glob.glob("a2/2/*")
-for f in files:
-    os.remove(f)
-files = glob.glob("a2/3/*")
-for f in files:
-    os.remove(f)
-files = glob.glob("a2/11/*")
-for f in files:
-    os.remove(f)
-files = glob.glob("a2/22/*")
-for f in files:
-    os.remove(f)
-files = glob.glob("a2/33/*")
-for f in files:
-    os.remove(f)
-files = glob.glob("a2/44/*")
-for f in files:
-    os.remove(f)
-mypath = "a"
-if not os.path.isdir(mypath):
-    os.makedirs(mypath)
-mypath = "a1"
-if not os.path.isdir(mypath):
-    os.makedirs(mypath)
-mypath = "a2/0"
-if not os.path.isdir(mypath):
-    os.makedirs(mypath)
-mypath = "a2/1"
-if not os.path.isdir(mypath):
-    os.makedirs(mypath)
-mypath = "a2/2"
-if not os.path.isdir(mypath):
-    os.makedirs(mypath)
-mypath = "a2/3"
-if not os.path.isdir(mypath):
-    os.makedirs(mypath)
-mypath = "a2/11"
-if not os.path.isdir(mypath):
-    os.makedirs(mypath)
-mypath = "a2/22"
-if not os.path.isdir(mypath):
-    os.makedirs(mypath)
-mypath = "a2/33"
-if not os.path.isdir(mypath):
-    os.makedirs(mypath)
-mypath = "a2/44"
-if not os.path.isdir(mypath):
-    os.makedirs(mypath)
+import os
+import glob
+
+def clear_directory(paths):
+    for path in paths:
+        files = glob.glob(path)
+        for f in files:
+            os.remove(f)
+
+def create_directories(paths):
+    for path in paths:
+        if not os.path.isdir(path):
+            os.makedirs(path)
+
+# Define paths
+paths_to_clear = [
+    "a/*",
+    "a1/*",
+    "a2/0/*",
+    "a2/1/*",
+    "a2/2/*",
+    "a2/3/*",
+    "a2/11/*",
+    "a2/22/*",
+    "a2/33/*",
+    "a2/44/*"
+]
+
+paths_to_create = [
+    "a",
+    "a1",
+    "a2/0",
+    "a2/1",
+    "a2/2",
+    "a2/3",
+    "a2/11",
+    "a2/22",
+    "a2/33",
+    "a2/44"
+]
+
+# Clear files in directories
+clear_directory(paths_to_clear)
+
+# Create directories
+create_directories(paths_to_create)
+
 
 image_folder = "data"
-image_name = "7781.jpeg"
+image_name = "7751_crop.jpeg"
 image_name = f"{image_folder}/{image_name}"
 window_size = 15
 sau_threshold = -0.05
