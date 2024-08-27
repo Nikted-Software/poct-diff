@@ -15,15 +15,21 @@ def kmeans_clustering(df, base_path, n_clusters):
         fn for fn in os.listdir(base_path)
         if any(fn.endswith(ext) for ext in included_extensions)
     ]
-    
+
     natsort_file_names = natsorted(file_names)
-    for m, file_name in enumerate(natsort_file_names):
+
+    # Check for consistency between number of images and number of predicted clusters
+    min_len = min(len(natsort_file_names), len(y_kmeans))
+
+    for m in range(min_len):
+        file_name = natsort_file_names[m]
         im = cv2.imread(os.path.join(base_path, file_name))
         cluster_label = y_kmeans[m]
         cluster_folder = os.path.join(base_path, "kmeans", f"{str(cluster_label+1).zfill(2)}")
         if not os.path.exists(cluster_folder):
             os.makedirs(cluster_folder)
         cv2.imwrite(f"{cluster_folder}/{m+1}_class{cluster_label}.jpg", im)
+
     
     X = df.iloc[:, [2, 1]].values
     colors = ["blue", "red", "green", "yellow", "purple", "orange", "cyan", "magenta", "brown", "pink"]
@@ -56,7 +62,12 @@ def gaussian_mixture_clustering(data, x, base_path, n_clusters):
     ]
     
     natsort_file_names = natsorted(file_names)
-    for m, file_name in enumerate(natsort_file_names):
+
+    # Check for consistency between number of images and number of predicted clusters
+    min_len = min(len(natsort_file_names), len(pred))
+
+    for m in range(min_len):
+        file_name = natsort_file_names[m]
         im = cv2.imread(os.path.join(base_path, file_name))
         cluster_label = pred[m]
         cluster_folder = os.path.join(base_path, "gaussian_mixture", f"{str(cluster_label+1).zfill(2)}")
@@ -76,6 +87,7 @@ def gaussian_mixture_clustering(data, x, base_path, n_clusters):
     plt.close(fig)
 
 
+
 def spectral_clustering(data, x1, base_path, n_clusters):
     clustering = SpectralClustering(
         n_clusters=n_clusters,
@@ -92,7 +104,12 @@ def spectral_clustering(data, x1, base_path, n_clusters):
     ]
     
     natsort_file_names = natsorted(file_names)
-    for m, file_name in enumerate(natsort_file_names):
+
+    # Check for consistency between number of images and number of predicted clusters
+    min_len = min(len(natsort_file_names), len(pred))
+
+    for m in range(min_len):
+        file_name = natsort_file_names[m]
         im = cv2.imread(os.path.join(base_path, file_name))
         cluster_label = pred[m]
         cluster_folder = os.path.join(base_path, "spectral", f"{str(cluster_label+1).zfill(2)}")
@@ -110,4 +127,3 @@ def spectral_clustering(data, x1, base_path, n_clusters):
     plt.ylabel("y")
     plt.savefig(os.path.join(base_path, "spectral", "spectral_clustering_plot.png"))
     plt.close(fig)
-

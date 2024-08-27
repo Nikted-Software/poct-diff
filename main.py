@@ -52,7 +52,7 @@ if not os.path.isdir(mypath):
 
 
 image_folder = "data"
-image_name = "7791_crop.jpeg"
+image_name = "7791.jpeg"
 image_name = f"{image_folder}/{image_name}"
 
 image1 = cv2.imread(image_name)
