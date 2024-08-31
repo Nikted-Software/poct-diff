@@ -52,7 +52,7 @@ if not os.path.isdir(mypath):
 
 
 image_folder = "data"
-image_name = "7791.jpeg"
+image_name = "7851.jpeg"
 image_name = f"{image_folder}/{image_name}"
 
 image1 = cv2.imread(image_name)
@@ -75,9 +75,9 @@ dataset = pd.read_csv("feature.csv")
 #preprocessing
 dataset = dataset.drop(dataset.columns[0], axis=1)
 data = dataset.iloc[:, :].values
-x = dataset.iloc[:, [1,2]].values
-x1 = dataset.iloc[:, [1,2]].values
-x1[:,[0,1]] = x1[:,[0,1]]/255
+x = dataset.iloc[:, [3]].values
+x1 = dataset.iloc[:, [3]].values
+x1[:,[0]] = x1[:,[0]]/255
 
 #plot data
 fig1=plt.figure()
@@ -85,6 +85,6 @@ plt.scatter(data[:, [2]], data[:, [1]])
 plt.savefig("data.png")
 plt.close(fig1)
 
-kmeans_clustering(df, base_path, n_clusters=2)
+kmeans_clustering(df,x, base_path, n_clusters=2)
 gaussian_mixture_clustering(data,x, base_path, n_clusters=n_clusters)
 updated_data = spectral_clustering(data, x1, base_path ,n_clusters=n_clusters)
