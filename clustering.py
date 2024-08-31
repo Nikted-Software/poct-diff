@@ -6,7 +6,7 @@ from sklearn.cluster import KMeans, SpectralClustering
 from sklearn.mixture import GaussianMixture
 from natsort import natsorted
 
-def kmeans_clustering(df,x, base_path, n_clusters):
+def kmeans_clustering(x,ax, base_path, n_clusters):
     kmeans = KMeans(n_clusters=n_clusters, init="random", max_iter=300, n_init=100)
     y_kmeans = kmeans.fit_predict(x)
     
@@ -31,11 +31,10 @@ def kmeans_clustering(df,x, base_path, n_clusters):
         cv2.imwrite(f"{cluster_folder}/{m+1}_class{cluster_label}.jpg", im)
 
     
-    X = df.iloc[:, [2, 1]].values
+    X = ax
     colors = ["blue", "red", "green", "yellow", "purple", "orange", "cyan", "magenta", "brown", "pink"]
     for i in range(n_clusters):
         plt.scatter(X[y_kmeans == i, 0], X[y_kmeans == i, 1], s=10, c=colors[i % len(colors)], label=f"Cluster {i+1}")
-    # plt.scatter(kmeans.cluster_centers_[:, 1], kmeans.cluster_centers_[:, 0], s=100, c="black", label="Centroids")
     plt.title(f"KMeans Clustering with {n_clusters} Clusters")
     plt.xlabel("r")
     plt.ylabel("g")
@@ -44,7 +43,7 @@ def kmeans_clustering(df,x, base_path, n_clusters):
     plt.close()
 
 
-def gaussian_mixture_clustering(data, x, base_path, n_clusters):
+def gaussian_mixture_clustering(x,ax, base_path, n_clusters):
     gm = GaussianMixture(
         n_components=n_clusters,
         covariance_type="full",
@@ -54,7 +53,7 @@ def gaussian_mixture_clustering(data, x, base_path, n_clusters):
     )
     pred = gm.fit_predict(x)
 
-    df = DataFrame({"x": data[:, 2], "y": data[:, 1], "label": pred})
+    df = DataFrame({"x": ax[:, 0], "y": ax[:, 1], "label": pred})
     included_extensions = ["jpg", "jpeg", "bmp", "png", "gif", "JPG"]
     file_names = [
         fn for fn in os.listdir(base_path)
