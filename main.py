@@ -52,7 +52,7 @@ if not os.path.isdir(mypath):
 
 
 image_folder = "data"
-image_name = "7921_crop.jpeg"
+image_name = "7926.jpeg"
 image_name = f"{image_folder}/{image_name}"
 
 image1 = cv2.imread(image_name)
@@ -94,5 +94,5 @@ plt.close(fig1)
 
 
 kmeans_clustering(x1,x, base_path, n_clusters=n_clusters)
-gaussian_mixture_clustering(x1,x, base_path, n_clusters=n_clusters)
+gaussian_mixture_clustering(df,x1,x, base_path, n_clusters=n_clusters)
 #spectral_clustering(data, x1, base_path ,n_clusters=n_clusters)
