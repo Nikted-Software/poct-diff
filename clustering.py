@@ -3,7 +3,7 @@ import cv2
 import matplotlib.pyplot as plt
 import pandas as pd
 from pandas import DataFrame
-from sklearn.cluster import KMeans, SpectralClustering
+from sklearn.cluster import KMeans, SpectralClustering,AffinityPropagation
 from sklearn.mixture import GaussianMixture
 from natsort import natsorted
 
@@ -83,13 +83,13 @@ def gaussian_mixture_clustering(dff, x, ax, base_path, n_clusters):
     df = pd.DataFrame({"x": ax[:, 0], "y": ax[:, 1], "label": pred})
     plot_clusters(df, method_folder, "Gaussian Mixture", n_clusters, "x", "y")
 
-def spectral_clustering(data, x1, base_path, n_clusters):
+def spectral_clustering(x, ax, base_path, n_clusters):
     clustering = SpectralClustering(
         n_clusters=n_clusters,
         assign_labels='discretize',
         random_state=0
     )
-    pred = clustering.fit_predict(x1)
+    pred = clustering.fit_predict(x)
 
     method_folder = os.path.join(base_path, "spectral")
     if not os.path.exists(method_folder):
@@ -98,5 +98,19 @@ def spectral_clustering(data, x1, base_path, n_clusters):
     file_names = get_image_files(base_path)
     save_clustered_images(base_path, file_names, pred, "spectral")
     
-    df = DataFrame({"x": data[:, 2], "y": data[:, 1], "label": pred})
+    df = DataFrame({"x": ax[:, 0], "y": ax[:, 1], "label": pred})
     plot_clusters(df, method_folder, "Spectral", n_clusters, "x", "y")
+
+
+def meanshift_clustering(x, ax, base_path, n_clusters):
+    clustering = AffinityPropagation()
+    pred = clustering.fit_predict(x)
+
+    method_folder = os.path.join(base_path, "mean")
+    if not os.path.exists(method_folder):
+        os.makedirs(method_folder)
+
+    file_names = get_image_files(base_path)
+    save_clustered_images(base_path, file_names, pred, "mean")
+    df = pd.DataFrame({"x": ax[:, 0], "y": ax[:, 1], "label": pred})
+    plot_clusters(df, method_folder, "mean", n_clusters, "r", "g")

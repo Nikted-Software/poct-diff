@@ -9,7 +9,7 @@ from natsort import natsorted
 from threshold_sauvola import sau
 import math
 from feature_extraction import feature_extraction
-from clustering import kmeans_clustering,spectral_clustering,gaussian_mixture_clustering
+from clustering import kmeans_clustering,spectral_clustering,gaussian_mixture_clustering,meanshift_clustering
 
 def clear_directory(paths):
     for path in paths:
@@ -23,7 +23,7 @@ def clear_directory(paths):
 
 def create_directories(base_path, n_clusters):
 
-    algorithms = ["kmeans", "gaussian_mixture", "spectral"]
+    algorithms = ["kmeans", "gaussian_mixture", "spectral","mean"]
     for algorithm in algorithms:
         for i in range(1, n_clusters + 1):
             cluster_folder = os.path.join(base_path, algorithm, f"{str(i).zfill(2)}")
@@ -36,7 +36,8 @@ n_clusters = 2
 paths_to_clear = [
     os.path.join(base_path, "kmeans/*"),
     os.path.join(base_path, "gaussian_mixture/*"),
-    os.path.join(base_path, "spectral/*")
+    os.path.join(base_path, "spectral/*"),
+    os.path.join(base_path, "mean/*")
 ]
 
 clear_directory(paths_to_clear)
@@ -74,25 +75,27 @@ dataset = pd.read_csv("feature.csv")
 
 #preprocessing
 dataset = dataset.drop(dataset.columns[0], axis=1)
+x1 = dataset.iloc[:, [3]].values
 x = dataset.iloc[:, [2,1]].values
 
-x1 = dataset.iloc[:, [1,2]].values
-x2 = dataset.iloc[:, [4]].values
-x1[:,[0]] = np.multiply(x1[:,[0]],x2)/np.max(np.multiply(x1[:,[0]],x2))
-x1[:,[1]] = np.multiply(x1[:,[1]],x2)/np.max(np.multiply(x1[:,[1]],x2))
-
-#plot data
-fig1=plt.figure()
-plt.scatter(x[:, [0]], x[:, [1]])
-plt.savefig("data.png")
-plt.close(fig1)
-
-fig1=plt.figure()
-plt.scatter(x1[:, [0]], x1[:, [1]])
-plt.savefig("data1.png")
-plt.close(fig1)
+#x1 = dataset.iloc[:, [1,2]].values
+#x2 = dataset.iloc[:, [4]].values
+#x1[:,[0]] = np.multiply(x1[:,[0]],x2)/np.max(np.multiply(x1[:,[0]],x2))
+#x1[:,[1]] = np.multiply(x1[:,[1]],x2)/np.max(np.multiply(x1[:,[1]],x2))
+#
+##plot data
+#fig1=plt.figure()
+#plt.scatter(x[:, [0]], x[:, [1]])
+#plt.savefig("data.png")
+#plt.close(fig1)
+#
+#fig1=plt.figure()
+#plt.scatter(x1[:, [0]], x1[:, [1]])
+#plt.savefig("data1.png")
+#plt.close(fig1)
 
 
 kmeans_clustering(x1,x, base_path, n_clusters=n_clusters)
 gaussian_mixture_clustering(df,x1,x, base_path, n_clusters=n_clusters)
-#spectral_clustering(data, x1, base_path ,n_clusters=n_clusters)
+spectral_clustering(x1,x, base_path ,n_clusters=n_clusters)
+#meanshift_clustering(x1,x, base_path, n_clusters=n_clusters)
