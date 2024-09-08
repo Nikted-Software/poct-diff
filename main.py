@@ -9,7 +9,7 @@ from natsort import natsorted
 from threshold_sauvola import sau
 import math
 from feature_extraction import feature_extraction
-from clustering import kmeans_clustering,spectral_clustering,gaussian_mixture_clustering,meanshift_clustering
+from clustering import kmeans_clustering,spectral_clustering,gaussian_mixture_clustering,agglomerative_clustering
 
 def clear_directory(paths):
     for path in paths:
@@ -23,7 +23,7 @@ def clear_directory(paths):
 
 def create_directories(base_path, n_clusters):
 
-    algorithms = ["kmeans", "gaussian_mixture", "spectral","mean"]
+    algorithms = ["kmeans", "gaussian_mixture", "spectral","agglomerative"]
     for algorithm in algorithms:
         for i in range(1, n_clusters + 1):
             cluster_folder = os.path.join(base_path, algorithm, f"{str(i).zfill(2)}")
@@ -37,7 +37,7 @@ paths_to_clear = [
     os.path.join(base_path, "kmeans/*"),
     os.path.join(base_path, "gaussian_mixture/*"),
     os.path.join(base_path, "spectral/*"),
-    os.path.join(base_path, "mean/*")
+    os.path.join(base_path, "agglomerative/*")
 ]
 
 clear_directory(paths_to_clear)
@@ -98,4 +98,4 @@ x = dataset.iloc[:, [2,1]].values
 kmeans_clustering(x1,x, base_path, n_clusters=n_clusters)
 gaussian_mixture_clustering(df,x1,x, base_path, n_clusters=n_clusters)
 spectral_clustering(x1,x, base_path ,n_clusters=n_clusters)
-#meanshift_clustering(x1,x, base_path, n_clusters=n_clusters)
+agglomerative_clustering(x1,x, base_path, n_clusters=n_clusters)

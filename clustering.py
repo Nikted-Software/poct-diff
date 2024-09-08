@@ -3,7 +3,7 @@ import cv2
 import matplotlib.pyplot as plt
 import pandas as pd
 from pandas import DataFrame
-from sklearn.cluster import KMeans, SpectralClustering,AffinityPropagation
+from sklearn.cluster import KMeans, SpectralClustering, AgglomerativeClustering
 from sklearn.mixture import GaussianMixture
 from natsort import natsorted
 
@@ -102,15 +102,15 @@ def spectral_clustering(x, ax, base_path, n_clusters):
     plot_clusters(df, method_folder, "Spectral", n_clusters, "x", "y")
 
 
-def meanshift_clustering(x, ax, base_path, n_clusters):
-    clustering = AffinityPropagation()
+def agglomerative_clustering(x, ax, base_path, n_clusters):
+    clustering = AgglomerativeClustering(n_clusters=n_clusters,linkage='single')
     pred = clustering.fit_predict(x)
 
-    method_folder = os.path.join(base_path, "mean")
+    method_folder = os.path.join(base_path, "agglomerative")
     if not os.path.exists(method_folder):
         os.makedirs(method_folder)
 
     file_names = get_image_files(base_path)
-    save_clustered_images(base_path, file_names, pred, "mean")
+    save_clustered_images(base_path, file_names, pred, "agglomerative")
     df = pd.DataFrame({"x": ax[:, 0], "y": ax[:, 1], "label": pred})
-    plot_clusters(df, method_folder, "mean", n_clusters, "r", "g")
+    plot_clusters(df, method_folder, "agglomerative", n_clusters, "r", "g")
