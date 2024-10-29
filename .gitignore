@@ -8,7 +8,6 @@ __pycache__/
 *.csv
 *.png
 *.txt
-*.docx
 2
 autoenc_output_clusters/
 byol_output_clusters/
@@ -18,4 +17,5 @@ images/
 simclr_output_clusters/
 simsiam_output_clusters/
 *.pth
+
 
