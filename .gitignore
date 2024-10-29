@@ -10,12 +10,12 @@ __pycache__/
 *.txt
 *.docx
 2
-autoenc_output_clusters
-byol_output_clusters
-comparison_images
-DeepClustering
-images
-simclr_output_clusters
-simsiam_output_clusters
+autoenc_output_clusters/
+byol_output_clusters/
+comparison_images/
+DeepClustering/
+images/
+simclr_output_clusters/
+simsiam_output_clusters/
 *.pth
 
