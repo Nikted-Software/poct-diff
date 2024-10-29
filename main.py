@@ -5,9 +5,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import glob
-from natsort import natsorted
-from threshold_sauvola import sau
-import math
 from feature_extraction import feature_extraction
 from clustering import kmeans_clustering,spectral_clustering,gaussian_mixture_clustering,agglomerative_clustering
 
