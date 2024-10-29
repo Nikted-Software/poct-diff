@@ -103,7 +103,7 @@ def spectral_clustering(x, ax, base_path, n_clusters):
 
 
 def agglomerative_clustering(x, ax, base_path, n_clusters):
-    clustering = AgglomerativeClustering(n_clusters=n_clusters,linkage='single')
+    clustering = AgglomerativeClustering(n_clusters=n_clusters,linkage='ward')
     pred = clustering.fit_predict(x)
 
     method_folder = os.path.join(base_path, "agglomerative")

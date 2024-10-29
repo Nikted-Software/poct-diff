@@ -37,7 +37,8 @@ paths_to_clear = [
     os.path.join(base_path, "kmeans/*"),
     os.path.join(base_path, "gaussian_mixture/*"),
     os.path.join(base_path, "spectral/*"),
-    os.path.join(base_path, "agglomerative/*")
+    os.path.join(base_path, "agglomerative/*"),
+    "a/*"
 ]
 
 clear_directory(paths_to_clear)
