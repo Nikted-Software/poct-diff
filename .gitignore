@@ -1,6 +1,7 @@
 a/
 a1/
 venv/
+cellpose/
 data/
 __pycache__/
 *.jpeg
@@ -8,6 +9,7 @@ __pycache__/
 *.csv
 *.png
 *.txt
+*.npy
 2
 autoenc_output_clusters/
 byol_output_clusters/
