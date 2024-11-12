@@ -15,7 +15,6 @@ from lightly.models.utils import deactivate_requires_grad
 import copy
 
 
-# Random seed for reproducibility
 random_number = 43
 torch.manual_seed(random_number)
 torch.cuda.manual_seed(random_number)
@@ -83,7 +82,7 @@ transform = SimCLRTransform(input_size=16,
         rr_prob=0,
         )
 
-dataset = LightlyDataset("2", transform=transform)
+dataset = LightlyDataset("../2", transform=transform)
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False)
 
 features = []
@@ -145,7 +144,7 @@ for i in range(n_clusters):
 
 # Move images into their corresponding cluster folder
 for idx, cluster_id in enumerate(clusters):
-    img_path = os.path.join("2", image_filenames[idx])
+    img_path = os.path.join("../2", image_filenames[idx])
     img = Image.open(img_path)
     img.save(os.path.join(output_dir, f'cluster_{cluster_id}', image_filenames[idx]))
 

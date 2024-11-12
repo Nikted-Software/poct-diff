@@ -84,7 +84,7 @@ transform = SimCLRTransform(input_size=input_size,
                             rr_prob=0.7,
                             rr_degrees=(-180.0, 180.0))
 
-dataset = LightlyDataset("images", transform=transform)
+dataset = LightlyDataset("../images", transform=transform)
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=4, shuffle=True)
 
 criterion = NegativeCosineSimilarity()
