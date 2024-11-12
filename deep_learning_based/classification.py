@@ -30,7 +30,7 @@ class SmallCNN(nn.Module):
         super(SmallCNN, self).__init__()
         self.conv1 = nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
-        self.fc1 = nn.Linear(64 * 4 , 128)
+        self.fc1 = nn.Linear(64 * 4, 128)
         self.fc2 = nn.Linear(128, 2)
 
     def forward(self, x):
@@ -83,7 +83,7 @@ for epoch in range(10):
 
 
 transform = transforms.Compose(
-    [transforms.Resize((image_size,image_size)), transforms.ToTensor()])
+    [transforms.Resize((image_size, image_size)), transforms.ToTensor()])
 
 
 class UnlabeledImageDataset(Dataset):
