@@ -6,7 +6,7 @@ from PIL import Image
 import torchvision.transforms as transforms
 
 
-image_folder = 'images'
+image_folder = '../images'
 model_save_path = 'autoencoder_model.pth'
 
 
@@ -52,7 +52,6 @@ class ConvAutoencoder(nn.Module):
         x = self.decoder_sigmoid(x)
         return x
 
-# Training the autoencoder
 def train_autoencoder():
     X_tensor = load_images_from_folder(image_folder)
     print(f'Image Tensor Shape: {X_tensor.shape}')
@@ -69,11 +68,10 @@ def train_autoencoder():
         for i in range(0, len(X_tensor), batch_size):
             batch = X_tensor[i:i+batch_size]
 
-            # Forward pass
+            
             output = autoencoder(batch)
             loss = criterion(output, batch)
 
-            # Backward pass
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()

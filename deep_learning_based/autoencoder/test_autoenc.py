@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from torchvision.transforms import ToPILImage
 import shutil
 
-image_folder = '2'
+image_folder = '../2'
 output_folder = 'autoenc_output_clusters'
 model_save_path = 'autoencoder_model.pth'
 comparison_folder = 'comparison_images'
