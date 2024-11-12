@@ -116,7 +116,7 @@ class_1_folder = os.path.join(output_folder, "Class_1")
 os.makedirs(class_0_folder, exist_ok=True)
 os.makedirs(class_1_folder, exist_ok=True)
 
-test_dataset = UnlabeledImageDataset(folder_path="2", transform=transform)
+test_dataset = UnlabeledImageDataset(folder_path="../2", transform=transform)
 test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
 
 with torch.no_grad():
@@ -124,7 +124,7 @@ with torch.no_grad():
         outputs = model(images)
         _, predicted = torch.max(outputs, 1)
         for filename, label in zip(filenames, predicted):
-            source_path = os.path.join("2", filename)
+            source_path = os.path.join("../2", filename)
             target_folder = class_0_folder if label.item() == 0 else class_1_folder
             shutil.copy(source_path, os.path.join(target_folder, filename))
 
