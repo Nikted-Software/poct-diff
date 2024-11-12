@@ -68,7 +68,7 @@ transform = SimCLRTransform(input_size=16,
         hf_prob = 0,
         rr_prob = 0,
         )
-dataset = LightlyDataset("2", transform=transform)
+dataset = LightlyDataset("../2", transform=transform)
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=1, shuffle=False)
 features = []
 image_filenames = []
@@ -124,7 +124,7 @@ for i in range(n_clusters):
     os.makedirs(os.path.join(output_dir, f'cluster_{i}'), exist_ok=True)
 
 for idx, cluster_id in enumerate(clusters):
-    img_path = os.path.join("2", image_filenames[idx]) 
+    img_path = os.path.join("../2", image_filenames[idx]) 
     img = Image.open(img_path)
     img.save(os.path.join(output_dir, f'cluster_{cluster_id}', image_filenames[idx]))
 
