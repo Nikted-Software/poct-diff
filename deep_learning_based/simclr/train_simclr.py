@@ -60,7 +60,7 @@ transform = SimCLRTransform(input_size=16,
         rr_degrees = (-180.0, 180.0),
         )
 
-dataset = LightlyDataset(input_dir="images", transform=transform)
+dataset = LightlyDataset(input_dir="../images", transform=transform)
 dataloader = torch.utils.data.DataLoader(
     dataset,
     batch_size=4,
