@@ -23,5 +23,4 @@ simclr_output_clusters/
 simsiam_output_clusters/
 *.pth
 !dec.txt
-
-
+*.jfif
