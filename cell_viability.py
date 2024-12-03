@@ -3,7 +3,8 @@ from threshold_sauvola import sau
 import math
 import matplotlib.pyplot as plt
 
-image = cv2.imread("abef0a3e-706f-4653-86cc-c96aa7f5ee8a.jfif")
+image_path = "62388edd-5f75-4063-8d2b-fddf59ffdc14.jpg"
+image = cv2.imread(image_path)
 grad = sau(image, 2001, 1.5)
 cv2.imshow("window_name", grad)
 cv2.waitKey(0)
@@ -15,7 +16,7 @@ for contour in contours:
         cont.append(contour)
 cv2.imwrite("viability1.jpg", image)
 
-image = cv2.imread("abef0a3e-706f-4653-86cc-c96aa7f5ee8a.jfif")
+image = cv2.imread(image_path)
 grad = sau(image, 15, 0.2)
 cv2.imshow("window_name", grad)
 cv2.waitKey(0)
