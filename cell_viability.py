@@ -3,7 +3,7 @@ from threshold_sauvola import sau
 import math
 import matplotlib.pyplot as plt
 
-image_path = "62388edd-5f75-4063-8d2b-fddf59ffdc14.jpg"
+image_path = "abef0a3e-706f-4653-86cc-c96aa7f5ee8a.jfif"
 image = cv2.imread(image_path)
 grad = sau(image, 2001, 1.5)
 cv2.imshow("window_name", grad)
@@ -43,14 +43,14 @@ for contour in contours:
                 if (
                     cv2.contourArea(contour) > 60
                     and cv2.contourArea(contour) < 5000
-                    and circular > 0
+                    and circular > 0.5
                 ):
                     print(circular)
                     cv2.drawContours(image, [contour], 0, (0, 0, 255), 2)
 
 
 fig1, ax1 = plt.subplots()
-ax1.hist(circulars, density=True, bins=10, range=[0, 1])
+ax1.hist(circulars, density=True, bins=20, range=[0, 1])
 ax1.set_xlabel("size value")
 ax1.set_ylabel("population")
 plt.show()
@@ -58,7 +58,7 @@ plt.show()
 plt.close(fig1)
 
 fig2, ax2 = plt.subplots()
-ax2.hist(size, density=True, bins=50, range=[0, 500])
+ax2.hist(size, density=True, bins=20, range=[0, 300])
 ax2.set_xlabel("size value")
 ax2.set_ylabel("population")
 plt.show()
