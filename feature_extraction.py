@@ -4,6 +4,7 @@ from otsu import otsu
 import numpy as np
 import pandas as pd
 import matplotlib
+
 # matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import warnings
@@ -12,9 +13,11 @@ import math
 
 warnings.filterwarnings("ignore", message="invalid value encountered in divide")
 
-def estimation(image1,calibration_coefficient,thickness,s_area):
 
+def estimation(image1, calibration_coefficient, thickness, s_area):
+    ###############################################################
     # local threshold with small window to find order of wbc number
+    ###############################################################
     window_size = 15
     sau_threshold = -0.05
     minimum_size = 1
@@ -35,9 +38,11 @@ def estimation(image1,calibration_coefficient,thickness,s_area):
         maximum_size = 300
     return maximum_size
 
-def noise_recognition(image1,maximum_size):
 
+def noise_recognition(image1, maximum_size):
+    ###############################################################
     # local threshold with big window to recognize stains and noises
+    ###############################################################
     image2 = image1
     # image3 = image1.copy()
     maximum_length = 100
@@ -59,8 +64,9 @@ def noise_recognition(image1,maximum_size):
             cont.append(contour)
             cv2.drawContours(image2, [contour], 0, (0, 0, 255), 2)
     cv2.imwrite("big_contour.jpg", image2)
-
+    ###############################################################
     # Determine whether there is a channel in the image or not
+    ###############################################################
     largest_contour = max(contours, key=cv2.contourArea)
     cnt = largest_contour
     leftmost = tuple(cnt[cnt[:, :, 0].argmin()][0])
@@ -74,8 +80,12 @@ def noise_recognition(image1,maximum_size):
     ):
         print("channel")
     return cont
-def green_and_size_threshold_finder(image1,cont,maximum_size):
+
+
+def green_and_size_threshold_finder(image1, cont, maximum_size):
+    ###############################################################
     # local threshold with small window to find size and green threshold
+    ###############################################################
     window_size = 15
     sau_threshold = -0.05
     minimum_size = 1
@@ -142,7 +152,6 @@ def green_and_size_threshold_finder(image1,cont,maximum_size):
                 ee = np.array(thf0)
                 thf.append(np.mean(ee, axis=0))
 
-    # show graph
     df = pd.DataFrame(thf)
     df[3] = are
     x = df[3]
@@ -158,8 +167,9 @@ def green_and_size_threshold_finder(image1,cont,maximum_size):
     n, bins, patches = plt.hist(x, density=True, bins=25, range=[0, 255])
     # plt.show()
     plt.close()
-
+    ###############################################################
     # Plot histogram for green value
+    ###############################################################
     x = df[1]
     n, bins, patches = plt.hist(x, density=True, bins=25, range=[0, 255])
     fig2, ax2 = plt.subplots()
@@ -170,7 +180,9 @@ def green_and_size_threshold_finder(image1,cont,maximum_size):
     plt.savefig("green.png")
     plt.close(fig2)
 
+    ###############################################################
     # find green threshold from histogram
+    ###############################################################
     n = np.diff(n)
     data = n
     peaks, _ = find_peaks(data, height=0.00001)
@@ -216,8 +228,9 @@ def green_and_size_threshold_finder(image1,cont,maximum_size):
     else:
         thresh = []
         thresh.append(81)
-
+    ###############################################################
     # find size threshold from histogram
+    ###############################################################
     n = df[3]
     n, bins, patches = plt.hist(n, density=True, bins=50, range=[0, 200])
     valleys, _ = find_peaks(-n, height=-0.00001)
@@ -231,20 +244,23 @@ def green_and_size_threshold_finder(image1,cont,maximum_size):
     if bins[i] <= 10 or bins[i] >= 40:
         bins[i] = 20
 
-    # parameters for last local threshold
     print("minimum green:", thresh[0])
     print("minimum size: ", bins[i])
     minimum_size = bins[i]
     minimum_green = thresh[0]
+    return minimum_size, minimum_green, le
 
-    return minimum_size,minimum_green ,le
-def total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_green,cont):
+
+def total_wbc_counter(
+    image_name, image1, minimum_size, maximum_size, le, minimum_green, cont
+):
 
     window_size = 15
     sau_threshold = -0.05
     maximum_blue = 100
-
-    # last local threshold to find wbc
+    ###############################################################
+    # last local threshold to find wbc count
+    ###############################################################
     image2 = image1
     image11 = sau(image1, window_size, sau_threshold)
     contours, hierarchy = cv2.findContours(
@@ -315,15 +331,15 @@ def total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_gre
     thf = []
     are = []
     image1 = cv2.imread(image_name)
-    #image1 = cv2.resize(image1, (4000, 3000))
+    # image1 = cv2.resize(image1, (4000, 3000))
     for c in final_contours:
         xx, yy, ww, hh = cv2.boundingRect(c)
         cr = image1[int(yy - p) : int(yy + hh + p), int(xx - p) : int(xx + ww + p)]
         count += 1
         thf0 = []
-        if cv2.contourArea(c) > minimum_size :
+        if cv2.contourArea(c) > minimum_size:
             perimeter = cv2.arcLength(c, True)
-            if cv2.contourArea(c) >= minimum_size  and cv2.contourArea(c) <= 2000 :
+            if cv2.contourArea(c) >= minimum_size and cv2.contourArea(c) <= 2000:
                 count1 += 1
                 cv2.imwrite(f"a/{count}.jpg", cr)
                 th = otsu(cr)
@@ -347,13 +363,17 @@ def total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_gre
     return df_final
 
 
-def feature_extraction(image_name,calibration_coefficient):
+def feature_extraction(image_name, calibration_coefficient):
     s_area = 6.38
     thickness = 0.022
     image1 = cv2.imread(image_name)
-    #image1 = cv2.resize(image1, (4000, 3000))
-    maximum_size = estimation(image1,calibration_coefficient,thickness,s_area)
-    cont = noise_recognition(image1,maximum_size)
-    minimum_size,minimum_green,le = green_and_size_threshold_finder(image1,cont,maximum_size)
-    df_final = total_wbc_counter(image_name,image1,minimum_size,maximum_size,le,minimum_green,cont)
+    # image1 = cv2.resize(image1, (4000, 3000))
+    maximum_size = estimation(image1, calibration_coefficient, thickness, s_area)
+    cont = noise_recognition(image1, maximum_size)
+    minimum_size, minimum_green, le = green_and_size_threshold_finder(
+        image1, cont, maximum_size
+    )
+    df_final = total_wbc_counter(
+        image_name, image1, minimum_size, maximum_size, le, minimum_green, cont
+    )
     return df_final

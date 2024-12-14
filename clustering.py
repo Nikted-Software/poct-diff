@@ -8,7 +8,6 @@ from sklearn.mixture import GaussianMixture
 from natsort import natsorted
 
 def get_image_files(base_path, extensions=["jpg", "jpeg", "bmp", "png", "gif", "JPG"]):
-    """Get sorted list of image files in the directory."""
     file_names = [
         fn for fn in os.listdir(base_path)
         if any(fn.endswith(ext) for ext in extensions)
@@ -16,7 +15,6 @@ def get_image_files(base_path, extensions=["jpg", "jpeg", "bmp", "png", "gif", "
     return natsorted(file_names)
 
 def save_clustered_images(base_path, file_names, labels, method_name):
-    """Save images into folders based on cluster labels."""
     saved_image_filenames = []
     cluster_labels = []
     for m, (file_name, label) in enumerate(zip(file_names, labels)):
@@ -32,7 +30,6 @@ def save_clustered_images(base_path, file_names, labels, method_name):
     return saved_image_filenames, cluster_labels
 
 def plot_clusters(df, method_folder, method_name, n_clusters, x_label, y_label):
-    """Plot and save the clustering results."""
     groups = df.groupby("label")
     fig, ax = plt.subplots()
     for name, group in groups:
