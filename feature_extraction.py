@@ -14,10 +14,10 @@ import math
 warnings.filterwarnings("ignore", message="invalid value encountered in divide")
 
 
+###############################################################
+# local threshold with small window to find order of wbc number
+###############################################################
 def estimation(image1, calibration_coefficient, thickness, s_area):
-    ###############################################################
-    # local threshold with small window to find order of wbc number
-    ###############################################################
     window_size = 15
     sau_threshold = -0.05
     minimum_size = 1
@@ -39,10 +39,11 @@ def estimation(image1, calibration_coefficient, thickness, s_area):
     return maximum_size
 
 
+###############################################################
+# local threshold with big window to recognize stains and noises
+###############################################################
 def noise_recognition(image1, maximum_size):
-    ###############################################################
-    # local threshold with big window to recognize stains and noises
-    ###############################################################
+
     image2 = image1
     # image3 = image1.copy()
     maximum_length = 100
@@ -64,6 +65,7 @@ def noise_recognition(image1, maximum_size):
             cont.append(contour)
             cv2.drawContours(image2, [contour], 0, (0, 0, 255), 2)
     cv2.imwrite("big_contour.jpg", image2)
+
     ###############################################################
     # Determine whether there is a channel in the image or not
     ###############################################################
@@ -82,10 +84,11 @@ def noise_recognition(image1, maximum_size):
     return cont
 
 
+###############################################################
+# local threshold with small window to find size and green threshold
+###############################################################
 def green_and_size_threshold_finder(image1, cont, maximum_size):
-    ###############################################################
-    # local threshold with small window to find size and green threshold
-    ###############################################################
+
     window_size = 15
     sau_threshold = -0.05
     minimum_size = 1
@@ -167,6 +170,7 @@ def green_and_size_threshold_finder(image1, cont, maximum_size):
     n, bins, patches = plt.hist(x, density=True, bins=25, range=[0, 255])
     # plt.show()
     plt.close()
+
     ###############################################################
     # Plot histogram for green value
     ###############################################################
@@ -228,6 +232,7 @@ def green_and_size_threshold_finder(image1, cont, maximum_size):
     else:
         thresh = []
         thresh.append(81)
+
     ###############################################################
     # find size threshold from histogram
     ###############################################################
@@ -251,6 +256,9 @@ def green_and_size_threshold_finder(image1, cont, maximum_size):
     return minimum_size, minimum_green, le
 
 
+###############################################################
+# last local threshold to find wbc count
+###############################################################
 def total_wbc_counter(
     image_name, image1, minimum_size, maximum_size, le, minimum_green, cont
 ):
@@ -258,9 +266,6 @@ def total_wbc_counter(
     window_size = 15
     sau_threshold = -0.05
     maximum_blue = 100
-    ###############################################################
-    # last local threshold to find wbc count
-    ###############################################################
     image2 = image1
     image11 = sau(image1, window_size, sau_threshold)
     contours, hierarchy = cv2.findContours(
