@@ -20,8 +20,6 @@ warnings.filterwarnings("ignore", message="invalid value encountered in divide")
 def estimation(image1, calibration_coefficient, thickness, s_area):
     window_size = 15
     sau_threshold = -0.05
-    minimum_size = 1
-
     image11 = sau(image1, window_size, sau_threshold)
     contours, hierarchy = cv2.findContours(
         image11, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE
@@ -329,8 +327,6 @@ def total_wbc_counter(
 
     count = 0
     count1 = 0
-    countsize = 0
-    countsize1 = 0
     countsize2 = 0
     p = 0
     thf = []
