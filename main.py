@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import os
 import glob
 from feature_extraction import feature_extraction
-from clustering import kmeans_clustering,spectral_clustering,gaussian_mixture_clustering,agglomerative_clustering
+from clustering import kmeans_clustering,spectral_clustering,gaussian_mixture_clustering,agglomerative_clustering,visualize_clusters_on_image
 
 def clear_directory(paths):
     for path in paths:
@@ -51,12 +51,14 @@ if not os.path.isdir(mypath):
 
 
 image_folder = "data"
-image_name = "7926.jpeg"
+image_name = "day3-2m-treat-2-500-700.jpg"
 image_name = f"{image_folder}/{image_name}"
 
 image1 = cv2.imread(image_name)
 image2 = image1
+image3 = image1.copy()
 image1[:, :, 0] = 0
+
 
 df = feature_extraction(image_name,0.93)
 
@@ -70,30 +72,22 @@ plt.savefig("ratio.png")
 plt.close(fig1)
 
 dataset = pd.read_csv("feature.csv")
-
-#preprocessing
 dataset = dataset.drop(dataset.columns[0], axis=1)
-x1 = dataset.iloc[:, [3]].values
-x = dataset.iloc[:, [2,1]].values
+x = dataset.iloc[:, [2, 1]].values  # r, g
 
-#x1 = dataset.iloc[:, [1,2]].values
-#x2 = dataset.iloc[:, [4]].values
-#x1[:,[0]] = np.multiply(x1[:,[0]],x2)/np.max(np.multiply(x1[:,[0]],x2))
-#x1[:,[1]] = np.multiply(x1[:,[1]],x2)/np.max(np.multiply(x1[:,[1]],x2))
-#
-##plot data
-#fig1=plt.figure()
-#plt.scatter(x[:, [0]], x[:, [1]])
-#plt.savefig("data.png")
-#plt.close(fig1)
-#
-#fig1=plt.figure()
-#plt.scatter(x1[:, [0]], x1[:, [1]])
-#plt.savefig("data1.png")
-#plt.close(fig1)
+y_kmeans, labeled_dataset = kmeans_clustering(dataset, x, x, base_path, n_clusters=2)
+labels_gmm, df_gmm = gaussian_mixture_clustering(df, x, x, base_path, n_clusters=2)
+labels_spec, df_spec = spectral_clustering(df, x, x, base_path, n_clusters=2)
+labels_agg, df_agg = agglomerative_clustering(df, x, x, base_path, n_clusters=2)
 
+dataset = pd.read_csv("feature.csv")
+dataset = dataset.drop(columns=["Unnamed: 0"])
 
-kmeans_clustering(x1,x, base_path, n_clusters=n_clusters)
-gaussian_mixture_clustering(df,x1,x, base_path, n_clusters=n_clusters)
-spectral_clustering(x1,x, base_path ,n_clusters=n_clusters)
-agglomerative_clustering(x1,x, base_path, n_clusters=n_clusters)
+x_centers = dataset["5"].values.astype(int)
+y_centers = dataset["6"].values.astype(int)
+centers = list(zip(x_centers, y_centers))
+
+x_centers = dataset.iloc[:, 5].values  
+y_centers = dataset.iloc[:, 6].values 
+centers = list(zip(x_centers.astype(int), y_centers.astype(int)))
+visualize_clusters_on_image(image3, centers, labels_gmm, 2)
