@@ -2,10 +2,28 @@ import os
 import cv2
 import matplotlib.pyplot as plt
 import pandas as pd
-from pandas import DataFrame
 from sklearn.cluster import KMeans, SpectralClustering, AgglomerativeClustering
 from sklearn.mixture import GaussianMixture
 from natsort import natsorted
+
+def visualize_clusters_on_image(image, centers, labels, n_clusters):
+    image_copy = image.copy()
+
+    fixed_colors = [
+        (0, 0, 255),   # Red
+        (0, 255, 0),   # Green
+        (255, 0, 0),   # Blue
+        (0, 255, 255), # Yellow
+        (255, 0, 255), # Magenta
+        (255, 255, 0), # Cyan
+    ]
+
+    for idx, (center, label) in enumerate(zip(centers, labels)):
+        color = fixed_colors[label % len(fixed_colors)]  # Cycle if more clusters than colors
+        cv2.circle(image_copy, (int(center[0]), int(center[1])), 10, color, -1)
+
+    cv2.imwrite("clustered_image.jpg", image_copy)
+    return image_copy
 
 def get_image_files(base_path, extensions=["jpg", "jpeg", "bmp", "png", "gif", "JPG"]):
     file_names = [
@@ -27,7 +45,7 @@ def save_clustered_images(base_path, file_names, labels, method_name):
         cv2.imwrite(saved_image_path, im)
         saved_image_filenames.append(new_file_name)
         cluster_labels.append(label)
-    return saved_image_filenames, cluster_labels
+
 
 def plot_clusters(df, method_folder, method_name, n_clusters, x_label, y_label):
     groups = df.groupby("label")
@@ -41,21 +59,21 @@ def plot_clusters(df, method_folder, method_name, n_clusters, x_label, y_label):
     plt.savefig(os.path.join(method_folder, f"{method_name.lower()}_plot.png"))
     plt.close(fig)
 
-def kmeans_clustering(x, ax, base_path, n_clusters):
+def kmeans_clustering(dataset, x, ax, base_path, n_clusters):
     kmeans = KMeans(n_clusters=n_clusters, init="random", max_iter=300, n_init=100)
     y_kmeans = kmeans.fit_predict(x)
-
+    dataset = dataset.copy()
+    dataset['label'] = y_kmeans
+    file_names = get_image_files(base_path) 
+    save_clustered_images(base_path, file_names, y_kmeans, "kmeans")
     method_folder = os.path.join(base_path, "kmeans")
     if not os.path.exists(method_folder):
         os.makedirs(method_folder)
+    df_plot = pd.DataFrame({"x": ax[:, 0], "y": ax[:, 1], "label": y_kmeans})
+    plot_clusters(df_plot, method_folder, "KMeans", n_clusters, "r", "g")
+    return y_kmeans, dataset
 
-    file_names = get_image_files(base_path)
-    save_clustered_images(base_path, file_names, y_kmeans, "kmeans")
-    
-    df = pd.DataFrame({"x": ax[:, 0], "y": ax[:, 1], "label": y_kmeans})
-    plot_clusters(df, method_folder, "KMeans", n_clusters, "r", "g")
-
-def gaussian_mixture_clustering(dff, x, ax, base_path, n_clusters):
+def gaussian_mixture_clustering(dataset, x, ax, base_path, n_clusters):
     gm = GaussianMixture(
         n_components=n_clusters,
         covariance_type="full",
@@ -64,50 +82,44 @@ def gaussian_mixture_clustering(dff, x, ax, base_path, n_clusters):
         max_iter=100,
     )
     pred = gm.fit_predict(x)
-
+    dataset = dataset.copy()
+    dataset['label'] = pred
+    file_names = get_image_files(base_path)  
+    save_clustered_images(base_path, file_names, pred, "gaussian_mixture")
     method_folder = os.path.join(base_path, "gaussian_mixture")
-    if not os.path.exists(method_folder):
-        os.makedirs(method_folder)
+    os.makedirs(method_folder, exist_ok=True)
+    df_plot = pd.DataFrame({"x": ax[:, 0], "y": ax[:, 1], "label": pred})
+    plot_clusters(df_plot, method_folder, "Gaussian Mixture", n_clusters, "x", "y")
+    return pred, dataset
 
-    file_names = get_image_files(base_path)
-    saved_image_filenames, cluster_labels = save_clustered_images(base_path, file_names, pred, "gaussian_mixture")
-    
-    dff['saved_file_name'] = saved_image_filenames
-    dff['cluster_label'] = cluster_labels
-    csv_path = os.path.join(method_folder, "file_labels.csv")
-    dff.to_csv(csv_path, index=False)
 
-    df = pd.DataFrame({"x": ax[:, 0], "y": ax[:, 1], "label": pred})
-    plot_clusters(df, method_folder, "Gaussian Mixture", n_clusters, "x", "y")
-
-def spectral_clustering(x, ax, base_path, n_clusters):
+def spectral_clustering(dataset, x, ax, base_path, n_clusters):
     clustering = SpectralClustering(
         n_clusters=n_clusters,
         assign_labels='discretize',
         random_state=0
     )
     pred = clustering.fit_predict(x)
-
-    method_folder = os.path.join(base_path, "spectral")
-    if not os.path.exists(method_folder):
-        os.makedirs(method_folder)
-
-    file_names = get_image_files(base_path)
+    dataset = dataset.copy()
+    dataset['label'] = pred
+    file_names = get_image_files(base_path)  
     save_clustered_images(base_path, file_names, pred, "spectral")
-    
-    df = DataFrame({"x": ax[:, 0], "y": ax[:, 1], "label": pred})
-    plot_clusters(df, method_folder, "Spectral", n_clusters, "x", "y")
+    method_folder = os.path.join(base_path, "spectral")
+    os.makedirs(method_folder, exist_ok=True)
+    df_plot = pd.DataFrame({"x": ax[:, 0], "y": ax[:, 1], "label": pred})
+    plot_clusters(df_plot, method_folder, "Spectral", n_clusters, "x", "y")
+    return pred, dataset
 
 
-def agglomerative_clustering(x, ax, base_path, n_clusters):
-    clustering = AgglomerativeClustering(n_clusters=n_clusters,linkage='ward')
+def agglomerative_clustering(dataset, x, ax, base_path, n_clusters):
+    clustering = AgglomerativeClustering(n_clusters=n_clusters, linkage='ward')
     pred = clustering.fit_predict(x)
-
-    method_folder = os.path.join(base_path, "agglomerative")
-    if not os.path.exists(method_folder):
-        os.makedirs(method_folder)
-
-    file_names = get_image_files(base_path)
+    dataset = dataset.copy()
+    dataset['label'] = pred
+    file_names = get_image_files(base_path) 
     save_clustered_images(base_path, file_names, pred, "agglomerative")
-    df = pd.DataFrame({"x": ax[:, 0], "y": ax[:, 1], "label": pred})
-    plot_clusters(df, method_folder, "agglomerative", n_clusters, "r", "g")
+    method_folder = os.path.join(base_path, "agglomerative")
+    os.makedirs(method_folder, exist_ok=True)
+    df_plot = pd.DataFrame({"x": ax[:, 0], "y": ax[:, 1], "label": pred})
+    plot_clusters(df_plot, method_folder, "Agglomerative", n_clusters, "r", "g")
+    return pred, dataset
