@@ -331,6 +331,7 @@ def total_wbc_counter(
     p = 0
     thf = []
     are = []
+    centers = []
     image1 = cv2.imread(image_name)
     # image1 = cv2.resize(image1, (4000, 3000))
     for c in final_contours:
@@ -356,10 +357,20 @@ def total_wbc_counter(
                             thf0.append(image0[q, g, :])
                 ee = np.array(thf0)
                 thf.append(np.mean(ee, axis=0))
+                
+                M = cv2.moments(c)
+                if M["m00"] != 0:
+                    cx = int(M["m10"] / M["m00"])
+                    cy = int(M["m01"] / M["m00"])
+                else:
+                    cx, cy = 0, 0
+                centers.append((cx, cy))
     cv2.imwrite("contt2.jpg", image2)
     df_final = pd.DataFrame(thf)
     df_final[3] = df_final[2] / df_final[1]
     df_final[4] = are
+    df_final[5] = [pt[0] for pt in centers]  
+    df_final[6] = [pt[1] for pt in centers]  
     df_final.to_csv("feature.csv")
     return df_final
 
