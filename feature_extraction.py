@@ -372,6 +372,7 @@ def total_wbc_counter(
     df_final[5] = [pt[0] for pt in centers]  
     df_final[6] = [pt[1] for pt in centers]  
     df_final.to_csv("feature.csv")
+    print(count1)
     return df_final
 
 
