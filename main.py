@@ -1,6 +1,4 @@
 import cv2
-from otsu import otsu
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
@@ -73,7 +71,15 @@ plt.close(fig1)
 
 dataset = pd.read_csv("feature.csv")
 dataset = dataset.drop(dataset.columns[0], axis=1)
-x = dataset.iloc[:, [2, 1]].values  # r, g
+
+# Column 0: Blue channel (B)
+# Column 1: Green channel (G)
+# Column 2: Red channel (R)
+# Column 3: Red/Green ratio (R/G)
+# Column 4: Area
+# Column 5: Center X coordinate
+# Column 6: Center Y coordinate
+x = dataset.iloc[:, [2, 1]].values  
 
 y_kmeans, labeled_dataset = kmeans_clustering(dataset, x, x, base_path, n_clusters=2)
 labels_gmm, df_gmm = gaussian_mixture_clustering(df, x, x, base_path, n_clusters=2)

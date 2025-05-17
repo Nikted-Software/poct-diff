@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from clustering import kmeans_clustering, spectral_clustering, gaussian_mixture_clustering
+from clustering import gaussian_mixture_clustering
 import matplotlib.pyplot as plt
 
 
