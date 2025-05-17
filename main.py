@@ -28,7 +28,7 @@ def create_directories(base_path, n_clusters):
 
 
 image_folder = "data/14040224"
-image_name = "20m_treat_3ao_1_crop.jpg"
+image_name = "20m_treat_2ao_3_crop.jpg"
 base_path = "a"
 n_clusters = 2
 
@@ -53,7 +53,6 @@ if not os.path.isdir(mypath):
     os.makedirs(mypath)
 
 image_name = f"{image_folder}/{image_name}"
-
 image1 = cv2.imread(image_name)
 image2 = image1
 image3 = image1.copy()
@@ -62,8 +61,26 @@ image1[:, :, 0] = 0
 
 df = feature_extraction(image_name,0.93)
 
+x = df[1]
+n, bins, patches = plt.hist(x, density=True)
+fig1, ax1 = plt.subplots()
+ax1.hist(x, density=True, bins=20, range=[0, 255])
+ax1.set_xlabel("green")
+ax1.set_ylabel("population")
+plt.savefig("green_cell.png")
+plt.close(fig1)
+
+x = df[2]
+n, bins, patches = plt.hist(x, density=True)
+fig1, ax1 = plt.subplots()
+ax1.hist(x, density=True, bins=20, range=[0, 255])
+ax1.set_xlabel("red")
+ax1.set_ylabel("population")
+plt.savefig("red_cell.png")
+plt.close(fig1)
+
 x = df[3]
-n, bins, patches = plt.hist(x, density=True, bins=50, range=[0, 3])
+n, bins, patches = plt.hist(x, density=True)
 fig1, ax1 = plt.subplots()
 ax1.hist(x, density=True, bins=20, range=[0, 3])
 ax1.set_xlabel("r/g")
@@ -88,6 +105,7 @@ y_kmeans, labeled_dataset = kmeans_clustering(dataset, x, x, base_path, n_cluste
 labels_gmm, df_gmm = gaussian_mixture_clustering(df, x, x, base_path, n_clusters=2)
 labels_spec, df_spec = spectral_clustering(df, x, x, base_path, n_clusters=2)
 labels_agg, df_agg = agglomerative_clustering(df, x, x, base_path, n_clusters=2)
+labels_manual, df_manual = manual_rg_clustering(df, x, x, base_path, 1.2)
 
 dataset = pd.read_csv("feature.csv")
 dataset = dataset.drop(columns=["Unnamed: 0"])
@@ -100,5 +118,3 @@ x_centers = dataset.iloc[:, 5].values
 y_centers = dataset.iloc[:, 6].values 
 centers = list(zip(x_centers.astype(int), y_centers.astype(int)))
 visualize_clusters_on_image(image3, centers, labels_gmm, 2)
-
-labels_manual, df_manual = manual_rg_clustering(df, x, x, base_path, 1.9)
