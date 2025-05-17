@@ -499,13 +499,11 @@ def total_wbc_counter(
     grid_x, grid_y = np.mgrid[min(x):max(x):100j, min(y):max(y):100j]
     grid_z = griddata((x, y), z, (grid_x, grid_y), method='cubic')
 
-    # Draw '+' markers on the original image at sampled background points
     image_with_points = image1.copy()
     for y, x in sampled_coords:  # sampled_coords = (y, x)
         cv2.drawMarker(image_with_points, (x, y), color=(0, 0, 255), markerType=cv2.MARKER_TILTED_CROSS, 
                        markerSize=10, thickness=3)
 
-    # Convert BGR to RGB for proper display with matplotlib
     image_rgb = cv2.cvtColor(image_with_points, cv2.COLOR_BGR2RGB)
     plt.figure(figsize=(10, 8))
     plt.imshow(image_rgb)
