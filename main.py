@@ -26,6 +26,15 @@ def create_directories(base_path, n_clusters):
             if not os.path.isdir(cluster_folder):
                 os.makedirs(cluster_folder)
 
+def plot_histogram(data, bins, data_range, xlabel, ylabel, xticks=None, filename="output.png"):
+    fig, ax = plt.subplots()
+    ax.hist(data, density=True, bins=bins, range=data_range)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    if xticks is not None:
+        ax.set_xticks(xticks)
+    plt.savefig(filename)
+    plt.close(fig)
 
 image_folder = "data/14040224"
 image_name = "20m_treat_2ao_3_crop.jpg"
@@ -61,33 +70,9 @@ image1[:, :, 0] = 0
 
 df = feature_extraction(image_name,0.93)
 
-x = df[1]
-n, bins, patches = plt.hist(x, density=True)
-fig1, ax1 = plt.subplots()
-ax1.hist(x, density=True, bins=20, range=[0, 255])
-ax1.set_xlabel("green")
-ax1.set_ylabel("population")
-plt.savefig("green_cell.png")
-plt.close(fig1)
-
-x = df[2]
-n, bins, patches = plt.hist(x, density=True)
-fig1, ax1 = plt.subplots()
-ax1.hist(x, density=True, bins=20, range=[0, 255])
-ax1.set_xlabel("red")
-ax1.set_ylabel("population")
-plt.savefig("red_cell.png")
-plt.close(fig1)
-
-x = df[3]
-n, bins, patches = plt.hist(x, density=True)
-fig1, ax1 = plt.subplots()
-ax1.hist(x, density=True, bins=20, range=[0, 3])
-ax1.set_xlabel("r/g")
-ax1.set_ylabel("population")
-ax1.set_xticks(np.arange(0, 3.1, 0.2))
-plt.savefig("red_to_green_ratio.png")
-plt.close(fig1)
+plot_histogram(df[1], bins=20, data_range=[0, 255], xlabel="green", ylabel="population", filename="green_cell.png")
+plot_histogram(df[2], bins=20, data_range=[0, 255], xlabel="red", ylabel="population", filename="red_cell.png")
+plot_histogram(df[3], bins=20, data_range=[0, 3], xlabel="r/g", ylabel="population", xticks=np.arange(0, 3.1, 0.2), filename="red_to_green_ratio.png")
 
 dataset = pd.read_csv("feature.csv")
 dataset = dataset.drop(dataset.columns[0], axis=1)
