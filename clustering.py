@@ -6,7 +6,7 @@ from sklearn.cluster import KMeans, SpectralClustering, AgglomerativeClustering
 from sklearn.mixture import GaussianMixture
 from natsort import natsorted
 
-def visualize_clusters_on_image(image, centers, labels, n_clusters):
+def visualize_clusters_on_image(image, centers, labels):
     image_copy = image.copy()
 
     fixed_colors = [

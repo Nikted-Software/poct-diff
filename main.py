@@ -102,4 +102,4 @@ centers = list(zip(x_centers, y_centers))
 x_centers = dataset.iloc[:, 5].values  
 y_centers = dataset.iloc[:, 6].values 
 centers = list(zip(x_centers.astype(int), y_centers.astype(int)))
-visualize_clusters_on_image(image3, centers, labels_gmm, 2)
+visualize_clusters_on_image(image3, centers, labels_manual)

@@ -3,10 +3,10 @@ from scipy.signal import find_peaks
 from otsu import otsu
 import numpy as np
 import pandas as pd
-import matplotlib
+from scipy.interpolate import griddata
+import matplotlib.pyplot as plt
 
 # matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import warnings
 from threshold_sauvola import sau
 import math
@@ -433,8 +433,113 @@ def total_wbc_counter(
                 else:
                     cx, cy = 0, 0
                 centers.append((cx, cy))
+    
+    
+    n_samples = 500
+    patch_size = 3  # must be odd
+    half_patch = patch_size // 2
+    min_distance = 10
+
+    # Create mask of contours
+    mask = np.zeros(image1.shape[:2], dtype=np.uint8)
+    cv2.drawContours(mask, contours, -1, color=255, thickness=cv2.FILLED)
+
+    # Invert mask: background = 255, cells = 0
+    background_mask = cv2.bitwise_not(mask)
+
+    # Distance from nearest cell
+    dist_transform = cv2.distanceTransform(background_mask, cv2.DIST_L2, 5)
+
+    # Filter valid points (at least min_distance from any cell)
+    valid_yx = np.column_stack(np.where((background_mask == 255) & (dist_transform >= min_distance)))
+
+    if len(valid_yx) < n_samples:
+        print(f"Warning: Only {len(valid_yx)} valid background pixels available, fewer than requested {n_samples}.")
+        n_samples = len(valid_yx)
+
+    # Sample center points
+    sampled_indices = np.random.choice(len(valid_yx), n_samples, replace=False)
+    sampled_coords = valid_yx[sampled_indices]
+
+    patch_means = []
+    xy_coords = []
+
+    for y, x in sampled_coords:
+        if (y - half_patch < 0 or y + half_patch >= image1.shape[0] or
+            x - half_patch < 0 or x + half_patch >= image1.shape[1]):
+            continue  # skip if patch would go out of image
+
+        patch = image1[y - half_patch : y + half_patch + 1, x - half_patch : x + half_patch + 1]
+        patch_mean = patch.reshape(-1, 3).mean(axis=0)  # average B, G, R
+        patch_means.append(patch_mean)
+        xy_coords.append((x, y))
+
+    df_background = pd.DataFrame(patch_means, columns=["B", "G", "R"])
+    df_background["x"] = [pt[0] for pt in xy_coords]
+    df_background["y"] = [pt[1] for pt in xy_coords]
+    df_background["intensity"] = (df_background["B"] + df_background["G"] + df_background["R"]) / 3
+    df_background.to_csv("background_samples_patch.csv", index=False)
+    
+    # Calculate mean and variance
+    mean_intensity = df_background["intensity"].mean()
+    variance_intensity = df_background["intensity"].var()
+    std_intensity = np.sqrt(variance_intensity)
+
+    # 95% confidence interval (assuming normal distribution)
+    z_score = 1.96  # for 95%
+    lower_bound = mean_intensity - z_score * std_intensity
+    upper_bound = mean_intensity + z_score * std_intensity
+
+    print(f"Mean intensity: {mean_intensity:.2f}")
+    print(f"Variance of intensity: {variance_intensity:.2f}")
+    print(f"Standard deviation: {std_intensity:.2f}")
+    print(f"95% interval: [{lower_bound:.2f}, {upper_bound:.2f}]")
+
+    x = df_background["x"].values
+    y = df_background["y"].values
+    z = df_background["intensity"].values
+    grid_x, grid_y = np.mgrid[min(x):max(x):100j, min(y):max(y):100j]
+    grid_z = griddata((x, y), z, (grid_x, grid_y), method='cubic')
+
+    # Draw '+' markers on the original image at sampled background points
+    image_with_points = image1.copy()
+    for y, x in sampled_coords:  # sampled_coords = (y, x)
+        cv2.drawMarker(image_with_points, (x, y), color=(0, 0, 255), markerType=cv2.MARKER_TILTED_CROSS, 
+                       markerSize=10, thickness=3)
+
+    # Convert BGR to RGB for proper display with matplotlib
+    image_rgb = cv2.cvtColor(image_with_points, cv2.COLOR_BGR2RGB)
+    plt.figure(figsize=(10, 8))
+    plt.imshow(image_rgb)
+    plt.title("Sampled Background Points (+) on Original Image")
+    plt.axis("off")
+    plt.show()
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.plot_surface(grid_x, grid_y, grid_z, cmap='viridis')
+    ax.set_xlabel("X Coordinate")
+    ax.set_ylabel("Y Coordinate")
+    ax.set_zlabel("Total Intensity (B+G+R)")
+    ax.set_zlim(0, 255)
+    plt.title("3D Surface of Background Pixel Intensities")
+    plt.tight_layout()
+    plt.show()  
+    # plt.savefig("background_intensity_surface.png") 
+    # plt.close()  
+
     cv2.imwrite("contt2.jpg", image2)
     df_final = pd.DataFrame(thf)
+    
+
+    df_final["intensity"] = (df_final[0] + df_final[1] + df_final[2])/3
+    mean_intensity = df_final["intensity"].mean()
+    var_intensity = df_final["intensity"].var()
+    std_intensity = df_final["intensity"].std()
+    print(f"Mean cell intensity: {mean_intensity:.2f}")
+    print(f"Variance of cell intensity: {var_intensity:.2f}")
+    print(f"Standard deviation of cell intensity: {std_intensity:.2f}")
+    
     df_final[3] = df_final[2] / df_final[1]
     df_final[4] = are
     df_final[5] = [pt[0] for pt in centers]  
