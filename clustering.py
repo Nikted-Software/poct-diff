@@ -10,16 +10,16 @@ def visualize_clusters_on_image(image, centers, labels, n_clusters):
     image_copy = image.copy()
 
     fixed_colors = [
-        (0, 0, 255),   # Red
-        (0, 255, 0),   # Green
-        (255, 0, 0),   # Blue
-        (0, 255, 255), # Yellow
-        (255, 0, 255), # Magenta
-        (255, 255, 0), # Cyan
+        (0, 0, 255),   
+        (0, 255, 0),   
+        (255, 0, 0),   
+        (0, 255, 255), 
+        (255, 0, 255),
+        (255, 255, 0), 
     ]
 
     for idx, (center, label) in enumerate(zip(centers, labels)):
-        color = fixed_colors[label % len(fixed_colors)]  # Cycle if more clusters than colors
+        color = fixed_colors[label % len(fixed_colors)]  
         cv2.circle(image_copy, (int(center[0]), int(center[1])), 10, color, -1)
 
     cv2.imwrite("clustered_image.jpg", image_copy)
