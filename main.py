@@ -50,8 +50,8 @@ if not os.path.isdir(mypath):
     os.makedirs(mypath)
 
 
-image_folder = "data"
-image_name = "day3-2m-treat-2-500-700.jpg"
+image_folder = "data/14040224"
+image_name = "2m_treat_1ao_2_crop.jpg"
 image_name = f"{image_folder}/{image_name}"
 
 image1 = cv2.imread(image_name)

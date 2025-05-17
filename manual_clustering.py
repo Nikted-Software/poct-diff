@@ -103,8 +103,8 @@ def plot_clusters(df, method_folder, method_name, n_clusters, x_label, y_label, 
     plt.show()
 
 
-image_folder = "data"
-image_name = "2m_treat2.jpg"
+image_folder = "data/14040224"
+image_name = "2m_treat_1ao_2_crop.jpg"
 image_name = f"{image_folder}/{image_name}"
 
 image3 = cv2.imread(image_name)
@@ -121,7 +121,7 @@ y_centers = dataset.iloc[:, 6].values.astype(int)
 
 centers = list(zip(x_centers, y_centers))
 base_path = "a"
-labels_gmm, df_gmm = gaussian_mixture_clustering(df, x, x, base_path, n_clusters=2)
+labels_gmm, df_gmm = gaussian_mixture_clustering(df, x, x, base_path, n_clusters=1)
 df_gmm = pd.DataFrame({'x': x_centers, 'y': y_centers, 'label': labels_gmm})
 
 plot_clusters(dataset, "output_method", "Gaussian Mixture", 2, "2", "1", image3, df_gmm)
