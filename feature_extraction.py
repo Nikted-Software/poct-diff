@@ -480,7 +480,6 @@ def total_wbc_counter(
     df_background["intensity"] = (df_background["B"] + df_background["G"] + df_background["R"]) / 3
     df_background.to_csv("background_samples_patch.csv", index=False)
     
-    # Calculate mean and variance
     mean_intensity = df_background["intensity"].mean()
     variance_intensity = df_background["intensity"].var()
     std_intensity = np.sqrt(variance_intensity)
@@ -491,7 +490,6 @@ def total_wbc_counter(
     upper_bound = mean_intensity + z_score * std_intensity
 
     print(f"Mean intensity: {mean_intensity:.2f}")
-    print(f"Variance of intensity: {variance_intensity:.2f}")
     print(f"Standard deviation: {std_intensity:.2f}")
     print(f"95% interval: [{lower_bound:.2f}, {upper_bound:.2f}]")
 
@@ -534,10 +532,8 @@ def total_wbc_counter(
 
     df_final["intensity"] = (df_final[0] + df_final[1] + df_final[2])/3
     mean_intensity = df_final["intensity"].mean()
-    var_intensity = df_final["intensity"].var()
     std_intensity = df_final["intensity"].std()
     print(f"Mean cell intensity: {mean_intensity:.2f}")
-    print(f"Variance of cell intensity: {var_intensity:.2f}")
     print(f"Standard deviation of cell intensity: {std_intensity:.2f}")
     
     df_final[3] = df_final[2] / df_final[1]
