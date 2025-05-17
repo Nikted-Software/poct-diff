@@ -223,7 +223,7 @@ def green_and_size_threshold_finder(image1, cont, maximum_size):
         plt.xlabel("Time")
         plt.ylabel("Smoothed Data")
         plt.legend()
-        plt.savefig("threshold_red.png")
+        plt.savefig("red_threshold.png")
         plt.close()
         thresh_red = bins[elements_after_first_peak_valley[0]]
         if thresh_red[0] <= 40 or thresh_red[0] >= 150:
@@ -285,7 +285,7 @@ def green_and_size_threshold_finder(image1, cont, maximum_size):
         plt.xlabel("Time")
         plt.ylabel("Smoothed Data")
         plt.legend()
-        plt.savefig("threshold.png")
+        plt.savefig("green_threshold.png")
         plt.close()
         thresh = bins[elements_after_first_peak_valley[0]]
         if thresh[0] <= 40 or thresh[0] >= 150:
@@ -440,7 +440,7 @@ def total_wbc_counter(
     df_final[5] = [pt[0] for pt in centers]  
     df_final[6] = [pt[1] for pt in centers]  
     df_final.to_csv("feature.csv")
-    print(count1)
+    print("cell number:",count1)
     return df_final
 
 

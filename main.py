@@ -3,8 +3,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import glob
+import numpy as np
 from feature_extraction import feature_extraction
-from clustering import kmeans_clustering,spectral_clustering,gaussian_mixture_clustering,agglomerative_clustering,visualize_clusters_on_image
+from clustering import kmeans_clustering,spectral_clustering,gaussian_mixture_clustering,agglomerative_clustering,visualize_clusters_on_image,manual_rg_clustering
 
 def clear_directory(paths):
     for path in paths:
@@ -18,7 +19,7 @@ def clear_directory(paths):
 
 def create_directories(base_path, n_clusters):
 
-    algorithms = ["kmeans", "gaussian_mixture", "spectral","agglomerative"]
+    algorithms = ["kmeans", "gaussian_mixture", "spectral","agglomerative", "manual_rg"]
     for algorithm in algorithms:
         for i in range(1, n_clusters + 1):
             cluster_folder = os.path.join(base_path, algorithm, f"{str(i).zfill(2)}")
@@ -27,7 +28,7 @@ def create_directories(base_path, n_clusters):
 
 
 image_folder = "data/14040224"
-image_name = "2m_treat_1ao_2_crop.jpg"
+image_name = "20m_treat_3ao_1_crop.jpg"
 base_path = "a"
 n_clusters = 2
 
@@ -36,6 +37,7 @@ paths_to_clear = [
     os.path.join(base_path, "gaussian_mixture/*"),
     os.path.join(base_path, "spectral/*"),
     os.path.join(base_path, "agglomerative/*"),
+    os.path.join(base_path, "manual_rg/*"),
     "a/*"
 ]
 
@@ -63,10 +65,11 @@ df = feature_extraction(image_name,0.93)
 x = df[3]
 n, bins, patches = plt.hist(x, density=True, bins=50, range=[0, 3])
 fig1, ax1 = plt.subplots()
-ax1.hist(x, density=True, bins=50, range=[0, 3])
+ax1.hist(x, density=True, bins=20, range=[0, 3])
 ax1.set_xlabel("r/g")
 ax1.set_ylabel("population")
-plt.savefig("ratio.png")
+ax1.set_xticks(np.arange(0, 3.1, 0.2))
+plt.savefig("red_to_green_ratio.png")
 plt.close(fig1)
 
 dataset = pd.read_csv("feature.csv")
@@ -97,3 +100,5 @@ x_centers = dataset.iloc[:, 5].values
 y_centers = dataset.iloc[:, 6].values 
 centers = list(zip(x_centers.astype(int), y_centers.astype(int)))
 visualize_clusters_on_image(image3, centers, labels_gmm, 2)
+
+labels_manual, df_manual = manual_rg_clustering(df, x, x, base_path, 1.9)

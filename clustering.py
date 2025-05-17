@@ -123,3 +123,15 @@ def agglomerative_clustering(dataset, x, ax, base_path, n_clusters):
     df_plot = pd.DataFrame({"x": ax[:, 0], "y": ax[:, 1], "label": pred})
     plot_clusters(df_plot, method_folder, "Agglomerative", n_clusters, "r", "g")
     return pred, dataset
+
+def manual_rg_clustering(dataset, x, ax, base_path, threshold):
+    pred = (dataset[3] > threshold).astype(int).values
+    dataset = dataset.copy()
+    dataset['label'] = pred
+    file_names = get_image_files(base_path)  # assumes this returns image paths in order
+    save_clustered_images(base_path, file_names, pred, "manual_rg")
+    method_folder = os.path.join(base_path, "manual_rg")
+    os.makedirs(method_folder, exist_ok=True)
+    df_plot = pd.DataFrame({"x": ax[:, 0], "y": ax[:, 1], "label": pred})
+    plot_clusters(df_plot, method_folder, "Manual red to green ratio Clustering", 2, "x", "y")
+    return pred, dataset
