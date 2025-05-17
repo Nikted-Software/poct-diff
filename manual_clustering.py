@@ -8,6 +8,8 @@ from clustering import gaussian_mixture_clustering
 from feature_extraction import feature_extraction
 import os
 
+image_folder = "data/14040224"
+image_name = "2m_treat_1ao_2_crop.jpg"
 clicking_enabled = True
 
 def on_click(event, ax, img, df, ax_img):
@@ -103,8 +105,6 @@ def plot_clusters(df, method_folder, method_name, n_clusters, x_label, y_label, 
     plt.show()
 
 
-image_folder = "data/14040224"
-image_name = "2m_treat_1ao_2_crop.jpg"
 image_name = f"{image_folder}/{image_name}"
 
 image3 = cv2.imread(image_name)
