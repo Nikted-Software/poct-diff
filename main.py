@@ -27,6 +27,9 @@ def create_directories(base_path, n_clusters):
             if not os.path.isdir(cluster_folder):
                 os.makedirs(cluster_folder)
 
+
+image_folder = "data/14040224"
+image_name = "2m_treat_1ao_2_crop.jpg"
 base_path = "a"
 n_clusters = 2
 
@@ -49,9 +52,6 @@ mypath = "a1"
 if not os.path.isdir(mypath):
     os.makedirs(mypath)
 
-
-image_folder = "data/14040224"
-image_name = "2m_treat_1ao_2_crop.jpg"
 image_name = f"{image_folder}/{image_name}"
 
 image1 = cv2.imread(image_name)
