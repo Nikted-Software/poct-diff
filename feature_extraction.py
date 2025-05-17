@@ -169,6 +169,69 @@ def green_and_size_threshold_finder(image1, cont, maximum_size):
     # plt.show()
     plt.close()
 
+
+    ###############################################################
+    # Plot histogram for red value
+    ###############################################################
+    x = df[2]
+    n, bins, patches = plt.hist(x, density=True, bins=25, range=[0, 255])
+    fig2, ax2 = plt.subplots()
+    ax2.hist(x, density=True, bins=25, range=[0, 255])
+    ax2.set_xlabel("red value")
+    ax2.set_ylabel("population")
+    # plt.show()
+    plt.savefig("red.png")
+    plt.close(fig2)
+    
+    ###############################################################
+    # find red threshold from histogram
+    ###############################################################
+    n = np.diff(n)
+    data = n
+    peaks, _ = find_peaks(data, height=0.00001)
+    valleys, _ = find_peaks(-data, height=-0.00001)
+
+    difference_threshold = 0.01
+    first_peak_valley_idx = None
+
+    for peak_idx in peaks:
+        next_valleys = valleys[valleys > peak_idx]
+        if len(next_valleys) > 0:
+            valley_idx = next_valleys[0]
+            if abs(data[peak_idx] - data[valley_idx]) > difference_threshold:
+                first_peak_valley_idx = valley_idx + 1
+                break
+
+    elements_after_first_peak_valley = []
+    if first_peak_valley_idx is not None:
+        for idx in range(first_peak_valley_idx, len(data)):
+            if abs(data[idx]) < 0.0015:
+                elements_after_first_peak_valley.append([idx])
+
+        time = np.arange(len(data))
+        smoothed_data = n
+        plt.figure()
+        plt.plot(time, smoothed_data, label="Smoothed Data")
+        plt.plot(peaks, data[peaks], "ro", label="Peaks")
+        plt.plot(valleys, data[valleys], "go", label="Valleys")
+        plt.plot(
+            elements_after_first_peak_valley,
+            data[elements_after_first_peak_valley],
+            "bo",
+            label="accepted green",
+        )
+        plt.xlabel("Time")
+        plt.ylabel("Smoothed Data")
+        plt.legend()
+        plt.savefig("threshold_red.png")
+        plt.close()
+        thresh_red = bins[elements_after_first_peak_valley[0]]
+        if thresh_red[0] <= 40 or thresh_red[0] >= 150:
+            thresh_red[0] = 80
+    else:
+        thresh_red = []
+        thresh_red.append(81)
+
     ###############################################################
     # Plot histogram for green value
     ###############################################################
@@ -244,21 +307,24 @@ def green_and_size_threshold_finder(image1, cont, maximum_size):
                 break
             if n[i] >= 0:
                 break
-    if bins[i] <= 10 or bins[i] >= 40:
+    print(bins[i])
+    if bins[i] <= 5 or bins[i] >= 40:
         bins[i] = 20
 
     print("minimum green:", thresh[0])
     print("minimum size: ", bins[i])
+    print("minimum red: ", thresh_red[0])
     minimum_size = bins[i]
     minimum_green = thresh[0]
-    return minimum_size, minimum_green, le
+    minimum_red = thresh_red[0]
+    return minimum_size, minimum_green,minimum_red, le
 
 
 ###############################################################
 # last local threshold to find wbc count
 ###############################################################
 def total_wbc_counter(
-    image_name, image1, minimum_size, maximum_size, le, minimum_green, cont
+    image_name, image1, minimum_size, maximum_size, le, minimum_green, cont,minimum_red
 ):
 
     window_size = 15
@@ -304,9 +370,10 @@ def total_wbc_counter(
                         dist = cv2.pointPolygonTest(contour1, (cx, cy), True)
                         if (
                             dist < -8
-                            and ((thf[count1 - 1][1])) > minimum_green
                             and (thf[count1 - 1][0]) < maximum_blue
                             and circular > 0
+                            and (((thf[count1 - 1][1])) > minimum_green
+                            or ((thf[count1 - 1][2])) > minimum_red)
                         ):
                             if co == le:
                                 count = count + 1
@@ -317,9 +384,10 @@ def total_wbc_counter(
                             break
                 else:
                     if (
-                        ((thf[count1 - 1][1])) > minimum_green
-                        and (thf[count1 - 1][0]) < maximum_blue
+                        (thf[count1 - 1][0]) < maximum_blue
                         and circular > 0
+                        and (((thf[count1 - 1][1])) > minimum_green
+                        or ((thf[count1 - 1][2])) > minimum_red)
                     ):
                         cv2.drawContours(image2, [c], 0, (255, 0, 255), 5)
                         final_contours.append(c)
@@ -383,10 +451,10 @@ def feature_extraction(image_name, calibration_coefficient):
     # image1 = cv2.resize(image1, (4000, 3000))
     maximum_size = estimation(image1, calibration_coefficient, thickness, s_area)
     cont = noise_recognition(image1, maximum_size)
-    minimum_size, minimum_green, le = green_and_size_threshold_finder(
+    minimum_size, minimum_green,minimum_red, le = green_and_size_threshold_finder(
         image1, cont, maximum_size
     )
     df_final = total_wbc_counter(
-        image_name, image1, minimum_size, maximum_size, le, minimum_green, cont
+        image_name, image1, minimum_size, maximum_size, le, minimum_green, cont,minimum_red
     )
     return df_final
