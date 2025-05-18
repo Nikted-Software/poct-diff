@@ -93,6 +93,14 @@ feature_extraction(image_name, 0.93)
 df = pd.read_csv("feature_background_subtracted.csv")
 df = df.drop(df.columns[0], axis=1)
 
+# Column 0: Blue channel (B)
+# Column 1: Green channel (G)
+# Column 2: Red channel (R)
+# Column 3: Red/Green ratio (R/G)
+# Column 4: Area
+# Column 5: Center X coordinate
+# Column 6: Center Y coordinate
+
 plot_histogram(
     df.iloc[:, 1],
     bins=20,
@@ -119,13 +127,6 @@ plot_histogram(
     filename="red_to_green_ratio.png",
 )
 
-# Column 0: Blue channel (B)
-# Column 1: Green channel (G)
-# Column 2: Red channel (R)
-# Column 3: Red/Green ratio (R/G)
-# Column 4: Area
-# Column 5: Center X coordinate
-# Column 6: Center Y coordinate
 x = df.iloc[:, [2, 1]].values
 
 y_kmeans, labeled_df = kmeans_clustering(df, x, x, base_path, n_clusters=2)
