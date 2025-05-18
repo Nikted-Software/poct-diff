@@ -5,6 +5,7 @@ import pandas as pd
 from sklearn.cluster import KMeans, SpectralClustering, AgglomerativeClustering
 from sklearn.mixture import GaussianMixture
 from natsort import natsorted
+import numpy as np
 
 
 def visualize_clusters_on_image(image, centers, labels):
@@ -53,16 +54,30 @@ def save_clustered_images(base_path, file_names, labels, method_name):
         cluster_labels.append(label)
 
 
-def plot_clusters(df, method_folder, method_name, n_clusters, x_label, y_label):
+def plot_clusters(
+    df, method_folder, method_name, n_clusters, x_label, y_label, rg_threshold=None
+):
     groups = df.groupby("label")
     fig, ax = plt.subplots()
     for name, group in groups:
-        ax.scatter(group.x, group.y, label=f"Cluster {name + 1}")
+        ax.scatter(group.x, group.y, label=f"Cluster {name + 1}", alpha=0.6)
+    if rg_threshold is not None and x_label.lower() == "x" and y_label.lower() == "y":
+        x_vals = np.linspace(df.x.min(), df.x.max(), 100)
+        y_vals = x_vals / rg_threshold
+        ax.plot(
+            x_vals, y_vals, color="black", linestyle="--", label=f"R/G = {rg_threshold}"
+        )
     ax.legend()
     plt.title(f"{method_name} Clustering with {n_clusters} Clusters")
     plt.xlabel(x_label)
     plt.ylabel(y_label)
-    plt.savefig(os.path.join(method_folder, f"{method_name.lower()}_plot.png"))
+    plt.xlim(0, 255)
+    plt.ylim(0, 255)
+    plt.grid(True)
+    plt.tight_layout()
+    os.makedirs(method_folder, exist_ok=True)
+    filename = f"{method_name.lower().replace(' ', '_')}_plot.png"
+    plt.savefig(os.path.join(method_folder, filename))
     plt.close(fig)
 
 
@@ -141,6 +156,12 @@ def manual_rg_clustering(dataset, x, ax, base_path, threshold):
     os.makedirs(method_folder, exist_ok=True)
     df_plot = pd.DataFrame({"x": ax[:, 0], "y": ax[:, 1], "label": pred})
     plot_clusters(
-        df_plot, method_folder, "Manual red to green ratio Clustering", 2, "x", "y"
+        df_plot,
+        method_folder,
+        "Manual red to green ratio Clustering",
+        2,
+        "x",
+        "y",
+        rg_threshold=threshold,
     )
     return pred, dataset

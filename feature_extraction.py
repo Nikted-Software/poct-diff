@@ -438,54 +438,48 @@ def total_wbc_counter(
                     cx, cy = 0, 0
                 centers.append((cx, cy))
 
-    n_samples = 1000
-    patch_size = 3  # must be odd
+    m, n = 30, 30 
+    patch_size = 3
     half_patch = patch_size // 2
-    min_distance = 10
+    min_distance = 20
 
-    # Create mask of contours
+    h, w = image1.shape[:2]
+    cell_h = h // m
+    cell_w = w // n
+    
     mask = np.zeros(image1.shape[:2], dtype=np.uint8)
-    cv2.drawContours(mask, contours, -1, color=255, thickness=cv2.FILLED)
-
-    # Invert mask: background = 255, cells = 0
+    cv2.drawContours(mask, final_contours, -1, color=255, thickness=cv2.FILLED)
     background_mask = cv2.bitwise_not(mask)
-
-    # Distance from nearest cell
     dist_transform = cv2.distanceTransform(background_mask, cv2.DIST_L2, 5)
 
-    # Filter valid points (at least min_distance from any cell)
-    valid_yx = np.column_stack(
-        np.where((background_mask == 255) & (dist_transform >= min_distance))
-    )
+    # Step 4: Loop over each grid cell and sample its center if valid
+    sampled_coords = []
 
-    if len(valid_yx) < n_samples:
-        print(
-            f"Warning: Only {len(valid_yx)} valid background pixels available, fewer than requested {n_samples}."
-        )
-        n_samples = len(valid_yx)
+    for i in range(m):
+        for j in range(n):
+            y = i * cell_h + cell_h // 2
+            x = j * cell_w + cell_w // 2
+            if (
+                y - half_patch < 0 or y + half_patch >= h or
+                x - half_patch < 0 or x + half_patch >= w
+            ):
+                continue
 
-    # Sample center points
-    sampled_indices = np.random.choice(len(valid_yx), n_samples, replace=False)
-    sampled_coords = valid_yx[sampled_indices]
+            if background_mask[y, x] == 255 and dist_transform[y, x] >= min_distance:
+                sampled_coords.append((y, x))
 
+    # Step 5: Extract BGR patch mean for valid sampled points
     patch_means = []
     xy_coords = []
 
     for y, x in sampled_coords:
-        if (
-            y - half_patch < 0
-            or y + half_patch >= image1.shape[0]
-            or x - half_patch < 0
-            or x + half_patch >= image1.shape[1]
-        ):
-            continue  # skip if patch would go out of image
-
         patch = image1[
-            y - half_patch : y + half_patch + 1, x - half_patch : x + half_patch + 1
+            y - half_patch : y + half_patch + 1,
+            x - half_patch : x + half_patch + 1
         ]
         patch_mean = patch.reshape(-1, 3).mean(axis=0)
         patch_means.append(patch_mean)
-        xy_coords.append((x, y))
+        xy_coords.append((x, y))  
 
     df_background = pd.DataFrame(patch_means, columns=["B", "G", "R"])
     df_background["x"] = [pt[0] for pt in xy_coords]

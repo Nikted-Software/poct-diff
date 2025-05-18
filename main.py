@@ -58,7 +58,7 @@ def plot_histogram(
 
 
 image_folder = "data/14040224"
-image_name = "20m_treat_2ao_3_crop.jpg"
+image_name = "20m_treat_2ao_4_crop.jpg"
 base_path = "a"
 n_clusters = 2
 
