@@ -37,7 +37,7 @@ def plot_histogram(data, bins, data_range, xlabel, ylabel, xticks=None, filename
     plt.close(fig)
 
 image_folder = "data/14040224"
-image_name = "20m_treat_2ao_3_crop.jpg"
+image_name = "20m_treat_2ao_3.jpg"
 base_path = "a"
 n_clusters = 2
 

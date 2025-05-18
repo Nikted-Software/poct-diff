@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import warnings
 from threshold_sauvola import sau
 import math
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
 
 warnings.filterwarnings("ignore", message="invalid value encountered in divide")
 
@@ -435,7 +437,7 @@ def total_wbc_counter(
                 centers.append((cx, cy))
     
     
-    n_samples = 500
+    n_samples = 1000
     patch_size = 3  # must be odd
     half_patch = patch_size // 2
     min_distance = 10
@@ -472,7 +474,8 @@ def total_wbc_counter(
         patch = image1[y - half_patch : y + half_patch + 1, x - half_patch : x + half_patch + 1]
         patch_mean = patch.reshape(-1, 3).mean(axis=0)  # average B, G, R
         patch_means.append(patch_mean)
-        xy_coords.append((x, y))
+        xy_coords.append((x, y))  # ✅ X first, then Y
+
 
     df_background = pd.DataFrame(patch_means, columns=["B", "G", "R"])
     df_background["x"] = [pt[0] for pt in xy_coords]
@@ -496,14 +499,16 @@ def total_wbc_counter(
     x = df_background["x"].values
     y = df_background["y"].values
     z = df_background["intensity"].values
+    x_vals = df_background["x"].values
+    y_vals = df_background["y"].values
+    z_vals = df_background["intensity"].values
     grid_x, grid_y = np.mgrid[min(x):max(x):100j, min(y):max(y):100j]
     grid_z = griddata((x, y), z, (grid_x, grid_y), method='cubic')
 
     image_with_points = image1.copy()
-    for y, x in sampled_coords:  # sampled_coords = (y, x)
+    for y, x in sampled_coords: 
         cv2.drawMarker(image_with_points, (x, y), color=(0, 0, 255), markerType=cv2.MARKER_TILTED_CROSS, 
                        markerSize=10, thickness=3)
-
     image_rgb = cv2.cvtColor(image_with_points, cv2.COLOR_BGR2RGB)
     plt.figure(figsize=(10, 8))
     plt.imshow(image_rgb)
@@ -511,6 +516,11 @@ def total_wbc_counter(
     plt.axis("off")
     plt.show()
 
+    #z_min = np.min(z)
+    #z_max = np.max(z)
+    #print(f"Raw intensity min: {z_min:.2f}, max: {z_max:.2f}")
+    #grid_z = np.where(np.isnan(grid_z), np.nan, np.clip(grid_z, z_min, z_max))
+    
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     ax.plot_surface(grid_x, grid_y, grid_z, cmap='viridis')
@@ -520,10 +530,77 @@ def total_wbc_counter(
     ax.set_zlim(0, 255)
     plt.title("3D Surface of Background Pixel Intensities")
     plt.tight_layout()
-    plt.show()  
-    # plt.savefig("background_intensity_surface.png") 
-    # plt.close()  
+    plt.show(block=False)  
 
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.scatter(x_vals, y_vals, z_vals, color='red', s=20, label='Sampled Points')
+    ax.set_xlabel("X Coordinate")
+    ax.set_ylabel("Y Coordinate")
+    ax.set_zlabel("Total Intensity (B+G+R)")
+    ax.set_zlim(0, 255)
+    ax.legend()
+    plt.title("3D Scatter of Sampled Background Intensities")
+    plt.tight_layout()
+    plt.show(block=False)  
+    plt.show() 
+    
+    # Average intensity along X axis (group by x)
+    avg_x = df_background.groupby("x")["intensity"].mean().reset_index()
+    
+    # Plot: Intensity vs X
+    plt.figure(figsize=(8, 4))
+    plt.plot(avg_x["x"], avg_x["intensity"], color='blue')
+    plt.xlabel("X Coordinate")
+    plt.ylabel("Average Intensity")
+    plt.title("Average Intensity vs X Axis")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+    
+    # Average intensity along Y axis (group by y)
+    avg_y = df_background.groupby("y")["intensity"].mean().reset_index()
+    
+    # Plot: Intensity vs Y
+    plt.figure(figsize=(8, 4))
+    plt.plot(avg_y["y"], avg_y["intensity"], color='green')
+    plt.xlabel("Y Coordinate")
+    plt.ylabel("Average Intensity")
+    plt.title("Average Intensity vs Y Axis")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+  
+
+    poly = PolynomialFeatures(degree=6)
+    X_poly = poly.fit_transform(np.column_stack((x_vals, y_vals)))
+    model = LinearRegression().fit(X_poly, z_vals)
+    x_range = np.linspace(x_vals.min(), x_vals.max(), 100)
+    y_range = np.linspace(y_vals.min(), y_vals.max(), 100)
+    grid_x, grid_y = np.meshgrid(x_range, y_range)
+    grid_points = np.column_stack((grid_x.ravel(), grid_y.ravel()))
+    grid_poly = poly.transform(grid_points)
+    grid_z = model.predict(grid_poly).reshape(grid_x.shape)
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.plot_surface(grid_x, grid_y, grid_z, cmap='viridis', alpha=0.8)
+    ax.scatter(x_vals, y_vals, z_vals, color='red', s=20, label='Sampled Points')
+    ax.set_xlabel("X Coordinate")
+    ax.set_ylabel("Y Coordinate")
+    ax.set_zlabel("Total Intensity (B+G+R)")
+    ax.set_zlim(0, 255)
+    ax.legend()
+    plt.title("3D Regression Surface with Sampled Background Intensities")
+    plt.tight_layout()
+    plt.show()
+
+    mean_bgr = df_background[["B", "G", "R"]].mean().values 
+    print(f"Mean background color (BGR): {mean_bgr}")
+    image_subtracted = image1.astype(np.float32) - mean_bgr
+    image_subtracted = np.clip(image_subtracted, 0, 255).astype(np.uint8)
+    cv2.imwrite("image_background_subtracted.jpg", image_subtracted)
+    
+    
     cv2.imwrite("contt2.jpg", image2)
     df_final = pd.DataFrame(thf)
     
