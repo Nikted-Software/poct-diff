@@ -125,10 +125,10 @@ def agglomerative_clustering(dataset, x, ax, base_path, n_clusters):
     return pred, dataset
 
 def manual_rg_clustering(dataset, x, ax, base_path, threshold):
-    pred = (dataset[3] > threshold).astype(int).values
+    pred = (dataset.iloc[:, 3] > threshold).astype(int).values
     dataset = dataset.copy()
     dataset['label'] = pred
-    file_names = get_image_files(base_path)  # assumes this returns image paths in order
+    file_names = get_image_files(base_path)  
     save_clustered_images(base_path, file_names, pred, "manual_rg")
     method_folder = os.path.join(base_path, "manual_rg")
     os.makedirs(method_folder, exist_ok=True)

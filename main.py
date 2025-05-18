@@ -37,7 +37,7 @@ def plot_histogram(data, bins, data_range, xlabel, ylabel, xticks=None, filename
     plt.close(fig)
 
 image_folder = "data/14040224"
-image_name = "20m_treat_2ao_3.jpg"
+image_name = "20m_treat_2ao_3_crop.jpg"
 base_path = "a"
 n_clusters = 2
 
@@ -68,14 +68,13 @@ image3 = image1.copy()
 image1[:, :, 0] = 0
 
 
-df = feature_extraction(image_name,0.93)
+feature_extraction(image_name,0.93)
+df = pd.read_csv("feature_background_subtracted.csv")
+df = df.drop(df.columns[0], axis=1)
 
-plot_histogram(df[1], bins=20, data_range=[0, 255], xlabel="green", ylabel="population", filename="green_cell.png")
-plot_histogram(df[2], bins=20, data_range=[0, 255], xlabel="red", ylabel="population", filename="red_cell.png")
-plot_histogram(df[3], bins=20, data_range=[0, 3], xlabel="r/g", ylabel="population", xticks=np.arange(0, 3.1, 0.2), filename="red_to_green_ratio.png")
-
-dataset = pd.read_csv("feature.csv")
-dataset = dataset.drop(dataset.columns[0], axis=1)
+plot_histogram(df.iloc[:, 1], bins=20, data_range=[0, 255], xlabel="green", ylabel="population", filename="green_cell.png")
+plot_histogram(df.iloc[:, 2], bins=20, data_range=[0, 255], xlabel="red", ylabel="population", filename="red_cell.png")
+plot_histogram(df.iloc[:, 3], bins=20, data_range=[0, 3], xlabel="r/g", ylabel="population", xticks=np.arange(0, 3.1, 0.2), filename="red_to_green_ratio.png")
 
 # Column 0: Blue channel (B)
 # Column 1: Green channel (G)
@@ -84,22 +83,29 @@ dataset = dataset.drop(dataset.columns[0], axis=1)
 # Column 4: Area
 # Column 5: Center X coordinate
 # Column 6: Center Y coordinate
-x = dataset.iloc[:, [2, 1]].values  
+x = df.iloc[:, [2, 1]].values  
 
-y_kmeans, labeled_dataset = kmeans_clustering(dataset, x, x, base_path, n_clusters=2)
+y_kmeans, labeled_df = kmeans_clustering(df, x, x, base_path, n_clusters=2)
 labels_gmm, df_gmm = gaussian_mixture_clustering(df, x, x, base_path, n_clusters=2)
 labels_spec, df_spec = spectral_clustering(df, x, x, base_path, n_clusters=2)
 labels_agg, df_agg = agglomerative_clustering(df, x, x, base_path, n_clusters=2)
-labels_manual, df_manual = manual_rg_clustering(df, x, x, base_path, 1.2)
+labels_manual, df_manual = manual_rg_clustering(df, x, x, base_path, 1.3)
 
-dataset = pd.read_csv("feature.csv")
-dataset = dataset.drop(columns=["Unnamed: 0"])
+plt.figure(figsize=(6, 5))
+plt.scatter(df.iloc[:, 2], df.iloc[:, 1], color='purple', s=10)
+plt.xlabel("Red Intensity")
+plt.ylabel("Green Intensity")
+plt.title("Red vs Green Scatter")
+plt.grid(True)
+plt.tight_layout()
+plt.savefig("red_green_scatter.png")
+plt.close()
 
-x_centers = dataset["5"].values.astype(int)
-y_centers = dataset["6"].values.astype(int)
+x_centers = df["5"].values.astype(int)
+y_centers = df["6"].values.astype(int)
 centers = list(zip(x_centers, y_centers))
 
-x_centers = dataset.iloc[:, 5].values  
-y_centers = dataset.iloc[:, 6].values 
+x_centers = df.iloc[:, 5].values  
+y_centers = df.iloc[:, 6].values 
 centers = list(zip(x_centers.astype(int), y_centers.astype(int)))
 visualize_clusters_on_image(image3, centers, labels_manual)

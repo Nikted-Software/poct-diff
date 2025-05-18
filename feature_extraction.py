@@ -624,9 +624,8 @@ def total_wbc_counter(
     cv2.imwrite("contt2.jpg", image2)
     df_final = pd.DataFrame(thf)
     
-    df_final["intensity"] = (df_final[0] + df_final[1] + df_final[2])/3
-    mean_intensity = df_final["intensity"].mean()
-    std_intensity = df_final["intensity"].std()
+    mean_intensity = ((df_final[0] + df_final[1] + df_final[2])/3).mean()
+    std_intensity = ((df_final[0] + df_final[1] + df_final[2])/3).std()
     print(f"Mean cell intensity: {mean_intensity:.2f}")
     print(f"Standard deviation of cell intensity: {std_intensity:.2f}")
     
@@ -636,7 +635,19 @@ def total_wbc_counter(
     df_final[6] = [pt[1] for pt in centers]  
     df_final.to_csv("feature.csv")
     print("cell number:",count1)
-    return df_final
+    
+    # Convert x and y to integers (they must be pixel indices)
+    x_cell = df_final[5].astype(int).clip(0, image1.shape[1] - 1)
+    y_cell = df_final[6].astype(int).clip(0, image1.shape[0] - 1)
+    df_final[0] = df_final[0] - background_surface[y_cell, x_cell, 0]
+    df_final[1] = df_final[1] - background_surface[y_cell, x_cell, 1]
+    df_final[2] = df_final[2] - background_surface[y_cell, x_cell, 2]
+    df_final[3] = df_final[2] / df_final[1]
+    df_final[4] = are
+    df_final[5] = [pt[0] for pt in centers]  
+    df_final[6] = [pt[1] for pt in centers]  
+    df_final.to_csv("feature_background_subtracted.csv")
+
 
 
 def feature_extraction(image_name, calibration_coefficient):
@@ -649,7 +660,6 @@ def feature_extraction(image_name, calibration_coefficient):
     minimum_size, minimum_green,minimum_red, le = green_and_size_threshold_finder(
         image1, cont, maximum_size
     )
-    df_final = total_wbc_counter(
+    total_wbc_counter(
         image_name, image1, minimum_size, maximum_size, le, minimum_green, cont,minimum_red
     )
-    return df_final
