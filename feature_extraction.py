@@ -3,7 +3,6 @@ from scipy.signal import find_peaks
 from otsu import otsu
 import numpy as np
 import pandas as pd
-from scipy.interpolate import griddata
 import matplotlib.pyplot as plt
 
 # matplotlib.use('Agg')
@@ -171,7 +170,6 @@ def green_and_size_threshold_finder(image1, cont, maximum_size):
     # plt.show()
     plt.close()
 
-
     ###############################################################
     # Plot histogram for red value
     ###############################################################
@@ -184,7 +182,7 @@ def green_and_size_threshold_finder(image1, cont, maximum_size):
     # plt.show()
     plt.savefig("red.png")
     plt.close(fig2)
-    
+
     ###############################################################
     # find red threshold from histogram
     ###############################################################
@@ -319,14 +317,14 @@ def green_and_size_threshold_finder(image1, cont, maximum_size):
     minimum_size = bins[i]
     minimum_green = thresh[0]
     minimum_red = thresh_red[0]
-    return minimum_size, minimum_green,minimum_red, le
+    return minimum_size, minimum_green, minimum_red, le
 
 
 ###############################################################
 # last local threshold to find wbc count
 ###############################################################
 def total_wbc_counter(
-    image_name, image1, minimum_size, maximum_size, le, minimum_green, cont,minimum_red
+    image_name, image1, minimum_size, maximum_size, le, minimum_green, cont, minimum_red
 ):
 
     window_size = 15
@@ -374,8 +372,10 @@ def total_wbc_counter(
                             dist < -8
                             and (thf[count1 - 1][0]) < maximum_blue
                             and circular > 0
-                            and (((thf[count1 - 1][1])) > minimum_green
-                            or ((thf[count1 - 1][2])) > minimum_red)
+                            and (
+                                ((thf[count1 - 1][1])) > minimum_green
+                                or ((thf[count1 - 1][2])) > minimum_red
+                            )
                         ):
                             if co == le:
                                 count = count + 1
@@ -388,8 +388,10 @@ def total_wbc_counter(
                     if (
                         (thf[count1 - 1][0]) < maximum_blue
                         and circular > 0
-                        and (((thf[count1 - 1][1])) > minimum_green
-                        or ((thf[count1 - 1][2])) > minimum_red)
+                        and (
+                            ((thf[count1 - 1][1])) > minimum_green
+                            or ((thf[count1 - 1][2])) > minimum_red
+                        )
                     ):
                         cv2.drawContours(image2, [c], 0, (255, 0, 255), 5)
                         final_contours.append(c)
@@ -427,7 +429,7 @@ def total_wbc_counter(
                             thf0.append(image0[q, g, :])
                 ee = np.array(thf0)
                 thf.append(np.mean(ee, axis=0))
-                
+
                 M = cv2.moments(c)
                 if M["m00"] != 0:
                     cx = int(M["m10"] / M["m00"])
@@ -435,8 +437,7 @@ def total_wbc_counter(
                 else:
                     cx, cy = 0, 0
                 centers.append((cx, cy))
-    
-    
+
     n_samples = 1000
     patch_size = 3  # must be odd
     half_patch = patch_size // 2
@@ -453,10 +454,14 @@ def total_wbc_counter(
     dist_transform = cv2.distanceTransform(background_mask, cv2.DIST_L2, 5)
 
     # Filter valid points (at least min_distance from any cell)
-    valid_yx = np.column_stack(np.where((background_mask == 255) & (dist_transform >= min_distance)))
+    valid_yx = np.column_stack(
+        np.where((background_mask == 255) & (dist_transform >= min_distance))
+    )
 
     if len(valid_yx) < n_samples:
-        print(f"Warning: Only {len(valid_yx)} valid background pixels available, fewer than requested {n_samples}.")
+        print(
+            f"Warning: Only {len(valid_yx)} valid background pixels available, fewer than requested {n_samples}."
+        )
         n_samples = len(valid_yx)
 
     # Sample center points
@@ -467,34 +472,34 @@ def total_wbc_counter(
     xy_coords = []
 
     for y, x in sampled_coords:
-        if (y - half_patch < 0 or y + half_patch >= image1.shape[0] or
-            x - half_patch < 0 or x + half_patch >= image1.shape[1]):
+        if (
+            y - half_patch < 0
+            or y + half_patch >= image1.shape[0]
+            or x - half_patch < 0
+            or x + half_patch >= image1.shape[1]
+        ):
             continue  # skip if patch would go out of image
 
-        patch = image1[y - half_patch : y + half_patch + 1, x - half_patch : x + half_patch + 1]
-        patch_mean = patch.reshape(-1, 3).mean(axis=0)  # average B, G, R
+        patch = image1[
+            y - half_patch : y + half_patch + 1, x - half_patch : x + half_patch + 1
+        ]
+        patch_mean = patch.reshape(-1, 3).mean(axis=0)
         patch_means.append(patch_mean)
-        xy_coords.append((x, y))  # ✅ X first, then Y
-
+        xy_coords.append((x, y))
 
     df_background = pd.DataFrame(patch_means, columns=["B", "G", "R"])
     df_background["x"] = [pt[0] for pt in xy_coords]
     df_background["y"] = [pt[1] for pt in xy_coords]
-    df_background["intensity"] = (df_background["B"] + df_background["G"] + df_background["R"]) / 3
+    df_background["intensity"] = (
+        df_background["B"] + df_background["G"] + df_background["R"]
+    ) / 3
     df_background.to_csv("background_samples_patch.csv", index=False)
-    
+
     mean_intensity = df_background["intensity"].mean()
     variance_intensity = df_background["intensity"].var()
     std_intensity = np.sqrt(variance_intensity)
-
-    # 95% confidence interval (assuming normal distribution)
-    z_score = 1.96  # for 95%
-    lower_bound = mean_intensity - z_score * std_intensity
-    upper_bound = mean_intensity + z_score * std_intensity
-
     print(f"Mean intensity: {mean_intensity:.2f}")
     print(f"Standard deviation: {std_intensity:.2f}")
-    print(f"95% interval: [{lower_bound:.2f}, {upper_bound:.2f}]")
 
     x = df_background["x"].values
     y = df_background["y"].values
@@ -504,9 +509,15 @@ def total_wbc_counter(
     z_vals = df_background["intensity"].values
 
     image_with_points = image1.copy()
-    for y, x in sampled_coords: 
-        cv2.drawMarker(image_with_points, (x, y), color=(0, 0, 255), markerType=cv2.MARKER_TILTED_CROSS, 
-                       markerSize=10, thickness=3)
+    for y, x in sampled_coords:
+        cv2.drawMarker(
+            image_with_points,
+            (x, y),
+            color=(0, 0, 255),
+            markerType=cv2.MARKER_TILTED_CROSS,
+            markerSize=10,
+            thickness=3,
+        )
     image_rgb = cv2.cvtColor(image_with_points, cv2.COLOR_BGR2RGB)
     plt.figure(figsize=(10, 8))
     plt.imshow(image_rgb)
@@ -514,10 +525,9 @@ def total_wbc_counter(
     plt.axis("off")
     plt.show()
 
-
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.scatter(x_vals, y_vals, z_vals, color='red', s=20, label='Sampled Points')
+    ax = fig.add_subplot(111, projection="3d")
+    ax.scatter(x_vals, y_vals, z_vals, color="red", s=20, label="Sampled Points")
     ax.set_xlabel("X Coordinate")
     ax.set_ylabel("Y Coordinate")
     ax.set_zlabel("Total Intensity (B+G+R)")
@@ -525,12 +535,12 @@ def total_wbc_counter(
     ax.legend()
     plt.title("3D Scatter of Sampled Background Intensities")
     plt.tight_layout()
-    plt.show(block=False)  
-    plt.show() 
-    
+    plt.show(block=False)
+    plt.show()
+
     avg_x = df_background.groupby("x")["intensity"].mean().reset_index()
     plt.figure(figsize=(8, 4))
-    plt.plot(avg_x["x"], avg_x["intensity"], color='blue')
+    plt.plot(avg_x["x"], avg_x["intensity"], color="blue")
     plt.xlabel("X Coordinate")
     plt.ylabel("Average Intensity")
     plt.title("Average Intensity vs X Axis")
@@ -540,14 +550,13 @@ def total_wbc_counter(
 
     avg_y = df_background.groupby("y")["intensity"].mean().reset_index()
     plt.figure(figsize=(8, 4))
-    plt.plot(avg_y["y"], avg_y["intensity"], color='green')
+    plt.plot(avg_y["y"], avg_y["intensity"], color="green")
     plt.xlabel("Y Coordinate")
     plt.ylabel("Average Intensity")
     plt.title("Average Intensity vs Y Axis")
     plt.grid(True)
     plt.tight_layout()
     plt.show()
-  
 
     poly = PolynomialFeatures(degree=6)
     X_poly = poly.fit_transform(np.column_stack((x_vals, y_vals)))
@@ -559,9 +568,9 @@ def total_wbc_counter(
     grid_poly = poly.transform(grid_points)
     grid_z = model.predict(grid_poly).reshape(grid_x.shape)
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    ax.plot_surface(grid_x, grid_y, grid_z, cmap='viridis', alpha=0.8)
-    ax.scatter(x_vals, y_vals, z_vals, color='red', s=20, label='Sampled Points')
+    ax = fig.add_subplot(111, projection="3d")
+    ax.plot_surface(grid_x, grid_y, grid_z, cmap="viridis", alpha=0.8)
+    ax.scatter(x_vals, y_vals, z_vals, color="red", s=20, label="Sampled Points")
     ax.set_xlabel("X Coordinate")
     ax.set_ylabel("Y Coordinate")
     ax.set_zlabel("Total Intensity (B+G+R)")
@@ -570,7 +579,7 @@ def total_wbc_counter(
     plt.title("3D Regression Surface with Sampled Background Intensities")
     plt.tight_layout()
     plt.show()
-    
+
     # Prepare the regression grid
     h, w = image1.shape[:2]
     x_full, y_full = np.meshgrid(np.arange(w), np.arange(h))
@@ -584,24 +593,21 @@ def total_wbc_counter(
         model = LinearRegression().fit(X_sample, z)
         X_full_poly = poly.transform(flat_xy)
         predicted = model.predict(X_full_poly).reshape((h, w))
-    
+
         background_surface[:, :, i] = predicted
     image_float = image1.astype(np.float32)
     image_subtracted = image_float - background_surface
     image_subtracted = np.clip(image_subtracted, 0, 255).astype(np.uint8)
     cv2.imwrite("image_background_surface_subtracted.jpg", image_subtracted)
-    
-    # 2. Flat mean BGR subtraction
+
     mean_bgr = df_background[["B", "G", "R"]].mean().values
     print(f"Mean background color (BGR): {mean_bgr}")
-
-    image_subtracted_mean = image1.astype(np.float32) - mean_bgr 
+    image_subtracted_mean = image1.astype(np.float32) - mean_bgr
     image_subtracted_mean = np.clip(image_subtracted_mean, 0, 255).astype(np.uint8)
     cv2.imwrite("image_background_mean_subtracted.jpg", image_subtracted_mean)
-    
+
     channel_names = ["Blue", "Green", "Red"]
     channel_colors = ["blue", "green", "red"]
-
     for i, (name, color) in enumerate(zip(channel_names, channel_colors)):
         surface = background_surface[:, :, i]
         step = max(1, h // 100)
@@ -609,9 +615,16 @@ def total_wbc_counter(
         y_surf = y_full[::step, ::step]
         z_surf = surface[::step, ::step]
         fig = plt.figure(figsize=(10, 6))
-        ax = fig.add_subplot(111, projection='3d')
-        ax.plot_surface(x_surf, y_surf, z_surf, cmap='viridis', alpha=0.8)
-        ax.scatter(x_vals, y_vals, df_background[color[0].upper()], color=color, s=10, label=f'Sampled {name} points')
+        ax = fig.add_subplot(111, projection="3d")
+        ax.plot_surface(x_surf, y_surf, z_surf, cmap="viridis", alpha=0.8)
+        ax.scatter(
+            x_vals,
+            y_vals,
+            df_background[color[0].upper()],
+            color=color,
+            s=10,
+            label=f"Sampled {name} points",
+        )
         ax.set_xlabel("X")
         ax.set_ylabel("Y")
         ax.set_zlabel(f"{name} Value")
@@ -620,22 +633,22 @@ def total_wbc_counter(
         plt.title(f"{name} Channel Regression Surface with Sampled Points")
         plt.tight_layout()
         plt.show()
-    
+
     cv2.imwrite("contt2.jpg", image2)
     df_final = pd.DataFrame(thf)
-    
-    mean_intensity = ((df_final[0] + df_final[1] + df_final[2])/3).mean()
-    std_intensity = ((df_final[0] + df_final[1] + df_final[2])/3).std()
+
+    mean_intensity = ((df_final[0] + df_final[1] + df_final[2]) / 3).mean()
+    std_intensity = ((df_final[0] + df_final[1] + df_final[2]) / 3).std()
     print(f"Mean cell intensity: {mean_intensity:.2f}")
     print(f"Standard deviation of cell intensity: {std_intensity:.2f}")
-    
+
     df_final[3] = df_final[2] / df_final[1]
     df_final[4] = are
-    df_final[5] = [pt[0] for pt in centers]  
-    df_final[6] = [pt[1] for pt in centers]  
+    df_final[5] = [pt[0] for pt in centers]
+    df_final[6] = [pt[1] for pt in centers]
     df_final.to_csv("feature.csv")
-    print("cell number:",count1)
-    
+    print("cell number:", count1)
+
     # Convert x and y to integers (they must be pixel indices)
     x_cell = df_final[5].astype(int).clip(0, image1.shape[1] - 1)
     y_cell = df_final[6].astype(int).clip(0, image1.shape[0] - 1)
@@ -644,10 +657,9 @@ def total_wbc_counter(
     df_final[2] = df_final[2] - background_surface[y_cell, x_cell, 2]
     df_final[3] = df_final[2] / df_final[1]
     df_final[4] = are
-    df_final[5] = [pt[0] for pt in centers]  
-    df_final[6] = [pt[1] for pt in centers]  
+    df_final[5] = [pt[0] for pt in centers]
+    df_final[6] = [pt[1] for pt in centers]
     df_final.to_csv("feature_background_subtracted.csv")
-
 
 
 def feature_extraction(image_name, calibration_coefficient):
@@ -657,9 +669,16 @@ def feature_extraction(image_name, calibration_coefficient):
     # image1 = cv2.resize(image1, (4000, 3000))
     maximum_size = estimation(image1, calibration_coefficient, thickness, s_area)
     cont = noise_recognition(image1, maximum_size)
-    minimum_size, minimum_green,minimum_red, le = green_and_size_threshold_finder(
+    minimum_size, minimum_green, minimum_red, le = green_and_size_threshold_finder(
         image1, cont, maximum_size
     )
     total_wbc_counter(
-        image_name, image1, minimum_size, maximum_size, le, minimum_green, cont,minimum_red
+        image_name,
+        image1,
+        minimum_size,
+        maximum_size,
+        le,
+        minimum_green,
+        cont,
+        minimum_red,
     )
