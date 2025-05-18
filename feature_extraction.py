@@ -547,7 +547,7 @@ def total_wbc_counter(
     
     # Average intensity along X axis (group by x)
     avg_x = df_background.groupby("x")["intensity"].mean().reset_index()
-    
+
     # Plot: Intensity vs X
     plt.figure(figsize=(8, 4))
     plt.plot(avg_x["x"], avg_x["intensity"], color='blue')
@@ -557,10 +557,10 @@ def total_wbc_counter(
     plt.grid(True)
     plt.tight_layout()
     plt.show()
-    
+
     # Average intensity along Y axis (group by y)
     avg_y = df_background.groupby("y")["intensity"].mean().reset_index()
-    
+
     # Plot: Intensity vs Y
     plt.figure(figsize=(8, 4))
     plt.plot(avg_y["y"], avg_y["intensity"], color='green')
@@ -593,13 +593,78 @@ def total_wbc_counter(
     plt.title("3D Regression Surface with Sampled Background Intensities")
     plt.tight_layout()
     plt.show()
-
-    mean_bgr = df_background[["B", "G", "R"]].mean().values 
-    print(f"Mean background color (BGR): {mean_bgr}")
-    image_subtracted = image1.astype(np.float32) - mean_bgr
-    image_subtracted = np.clip(image_subtracted, 0, 255).astype(np.uint8)
-    cv2.imwrite("image_background_subtracted.jpg", image_subtracted)
     
+    # Prepare the regression grid
+    h, w = image1.shape[:2]
+    x_full, y_full = np.meshgrid(np.arange(w), np.arange(h))
+    flat_xy = np.column_stack((x_full.ravel(), y_full.ravel()))
+    
+    # Degree of regression
+    degree = 6
+    poly = PolynomialFeatures(degree=degree)
+    
+    # Transform sampled coords (x_vals, y_vals from df_background)
+    X_sample = poly.fit_transform(np.column_stack((x_vals, y_vals)))
+    
+    # Initialize background surface
+    background_surface = np.zeros_like(image1, dtype=np.float32)
+    
+    # Fit and predict for each channel
+    for i, color in enumerate(["B", "G", "R"]):
+        z = df_background[color].values
+        model = LinearRegression().fit(X_sample, z)
+    
+        # Predict full surface
+        X_full_poly = poly.transform(flat_xy)
+        predicted = model.predict(X_full_poly).reshape((h, w))
+    
+        background_surface[:, :, i] = predicted
+    
+    # ✅ Now subtract surface from original image
+    image_float = image1.astype(np.float32)
+    image_subtracted = image_float - background_surface
+    image_subtracted = np.clip(image_subtracted, 0, 255).astype(np.uint8)
+    cv2.imwrite("image_background_surface_subtracted.jpg", image_subtracted)
+    
+    # 2. Flat mean BGR subtraction
+    mean_bgr = df_background[["B", "G", "R"]].mean().values
+    print(f"Mean background color (BGR): {mean_bgr}")
+    
+    image_subtracted_mean = image1.astype(np.float32) - mean_bgr  # broadcasts over all pixels
+    image_subtracted_mean = np.clip(image_subtracted_mean, 0, 255).astype(np.uint8)
+    cv2.imwrite("image_background_mean_subtracted.jpg", image_subtracted_mean)
+    
+    channel_names = ["Blue", "Green", "Red"]
+    channel_colors = ["blue", "green", "red"]
+
+    for i, (name, color) in enumerate(zip(channel_names, channel_colors)):
+        # Get predicted surface for this channel
+        surface = background_surface[:, :, i]
+
+        # Downsample the surface for faster plotting (optional)
+        step = max(1, h // 100)
+        x_surf = x_full[::step, ::step]
+        y_surf = y_full[::step, ::step]
+        z_surf = surface[::step, ::step]
+
+        # Create 3D plot
+        fig = plt.figure(figsize=(10, 6))
+        ax = fig.add_subplot(111, projection='3d')
+
+        # Plot regression surface
+        ax.plot_surface(x_surf, y_surf, z_surf, cmap='viridis', alpha=0.8)
+
+        # Plot sampled points
+        ax.scatter(x_vals, y_vals, df_background[color[0].upper()], color=color, s=10, label=f'Sampled {name} points')
+
+        ax.set_xlabel("X")
+        ax.set_ylabel("Y")
+        ax.set_zlabel(f"{name} Value")
+        ax.set_zlim(0, 255)
+        ax.legend()
+        plt.title(f"{name} Channel Regression Surface with Sampled Points")
+        plt.tight_layout()
+        plt.show()
     
     cv2.imwrite("contt2.jpg", image2)
     df_final = pd.DataFrame(thf)
